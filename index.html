@@ -4,7 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login and Sign Up</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+            width: 360px;
+            max-width: 100%;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-toggle {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .form-toggle button {
+            background: #6e8efb;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px;
+            width: 50%;
+            transition: background 0.3s;
+        }
+
+        .form-toggle button:hover {
+            background: #a777e3;
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form input {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 10px;
+            width: calc(100% - 22px); /* Account for padding */
+        }
+
+        .form button {
+            background: #6e8efb;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px;
+            transition: background 0.3s;
+        }
+
+        .form button:hover {
+            background: #a777e3;
+        }
+
+        /* New Page Styles */
+        #new-page {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            background-color: yellow;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #new-page header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+
+        #new-page footer {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+
+        #new-page .logout-button {
+            background: #6e8efb;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px 20px;
+            transition: background 0.3s;
+        }
+
+        #new-page .logout-button:hover {
+            background: #a777e3;
+        }
+
+        #new-page .play-button {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15,20 +130,86 @@
             </div>
             <form id="login-form" class="form" onsubmit="handleSubmit(event, 'login')">
                 <h2>Login</h2>
-                <input type="text" placeholder="Username" required>
-                <input type="password" placeholder="Password" required>
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
                 <button type="submit">Login</button>
             </form>
             <form id="signup-form" class="form" onsubmit="handleSubmit(event, 'signup')" style="display: none;">
                 <h2>Sign Up</h2>
-                <input type="text" placeholder="Username" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
+                <input type="text" id="signup-username" placeholder="Username" required>
+                <input type="email" id="signup-email" placeholder="Email" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
                 <button type="submit">Sign Up</button>
             </form>
         </div>
     </div>
-    <script src="scripts.js"></script>
+
+    <!-- New Page Content -->
+    <div id="new-page">
+        <header>
+            <button class="logout-button" onclick="logout()">Logout</button>
+        </header>
+        <footer>
+            <img src="play-button.png" alt="Play Button" class="play-button">
+        </footer>
+    </div>
+
+    <script>
+        function toggleForm(form) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const loginToggle = document.getElementById('login-toggle');
+            const signupToggle = document.getElementById('signup-toggle');
+
+            if (form === 'login') {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                loginToggle.classList.add('active');
+                signupToggle.classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                loginToggle.classList.remove('active');
+                signupToggle.classList.add('active');
+            }
+        }
+
+        function handleSubmit(event, form) {
+            event.preventDefault();
+            if (form === 'signup') {
+                const username = document.getElementById('signup-username').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                
+                // Store the user information in localStorage
+                localStorage.setItem('user', JSON.stringify({ username, email, password }));
+                alert('Sign up successful! You can now log in.');
+                toggleForm('login');
+            } else if (form === 'login') {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                // Retrieve user information from localStorage
+                const user = JSON.parse(localStorage.getItem('user'));
+                
+                if (user && user.email === email && user.password === password) {
+                    alert('Login successful!');
+                    showNewPage();
+                } else {
+                    alert('Invalid email or password.');
+                }
+            }
+        }
+
+        function showNewPage() {
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('new-page').style.display = 'flex';
+        }
+
+        function logout() {
+            document.getElementById('new-page').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+        }
+    </script>
 </body>
-  </html>
-  
+</html>
