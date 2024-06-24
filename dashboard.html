@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: yellow;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+
+        footer {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+
+        .logout-button {
+            background: #6e8efb;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px 20px;
+            transition: background 0.3s;
+        }
+
+        .logout-button:hover {
+            background: #a777e3;
+        }
+
+        .play-button {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="logout-button" onclick="logout()">Logout</button>
+    </header>
+    <footer>
+        <img src="play-button.png" alt="Play Button" class="play-button">
+    </footer>
+
+    <script>
+        function logout() {
+            sessionStorage.removeItem('loggedIn');
+            window.location.href = 'index.html';  // Redirect to login page
+        }
+
+        window.onload = function() {
+            if (sessionStorage.getItem('loggedIn') !== 'true') {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
