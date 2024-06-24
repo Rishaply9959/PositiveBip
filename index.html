@@ -78,51 +78,10 @@
         .form button:hover {
             background: #a777e3;
         }
-
-        /* New Page Styles */
-        #new-page {
-            display: none;
-            width: 100%;
-            height: 100vh;
-            background-color: yellow;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        #new-page header {
-            display: flex;
-            justify-content: flex-end;
-            padding: 20px;
-        }
-
-        #new-page footer {
-            display: flex;
-            justify-content: flex-end;
-            padding: 20px;
-        }
-
-        #new-page .logout-button {
-            background: #6e8efb;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            padding: 10px 20px;
-            transition: background 0.3s;
-        }
-
-        #new-page .logout-button:hover {
-            background: #a777e3;
-        }
-
-        #new-page .play-button {
-            width: 50px;
-            height: 50px;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="login-signup-container">
         <div class="form-container">
             <div class="form-toggle">
                 <button id="login-toggle" onclick="toggleForm('login')">Login</button>
@@ -142,16 +101,6 @@
                 <button type="submit">Sign Up</button>
             </form>
         </div>
-    </div>
-
-    <!-- New Page Content -->
-    <div id="new-page">
-        <header>
-            <button class="logout-button" onclick="logout()">Logout</button>
-        </header>
-        <footer>
-            <img src="play-button-icon.png" alt="Play Button" class="play-button">
-        </footer>
     </div>
 
     <script>
@@ -194,21 +143,18 @@
                 
                 if (user && user.email === email && user.password === password) {
                     alert('Login successful!');
-                    showNewPage();
+                    sessionStorage.setItem('loggedIn', 'true');
+                    window.location.href = 'dashboard.html';  // Redirect to dashboard page
                 } else {
                     alert('Invalid email or password.');
                 }
             }
         }
 
-        function showNewPage() {
-            document.querySelector('.container').style.display = 'none';
-            document.getElementById('new-page').style.display = 'flex';
-        }
-
-        function logout() {
-            document.getElementById('new-page').style.display = 'none';
-            document.querySelector('.container').style.display = 'block';
+        window.onload = function() {
+            if (sessionStorage.getItem('loggedIn') === 'true') {
+                window.location.href = 'dashboard.html';
+            }
         }
     </script>
 </body>
