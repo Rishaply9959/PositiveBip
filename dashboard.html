@@ -48,8 +48,7 @@
 
         footer {
             display: flex;
-            justify-content: center;
-            gap: 20px;
+            justify-content: space-between;
             padding: 20px;
         }
 
@@ -126,7 +125,7 @@
 
     <main>
         <div class="video-container">
-            <video id="dashboardVideo" width="600" controls>
+            <video id="dashboardVideo" width="400" controls>
                 <source src="your-video-file.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
@@ -134,8 +133,8 @@
     </main>
 
     <footer>
-        <img src="play-button-icon.png" alt="Play Button" class="control-button" onclick="playAudio()">
         <img src="stop-button-icon.png" alt="Stop Button" class="control-button" onclick="stopAudio()">
+        <img src="play-button-icon.png" alt="Play Button" class="control-button" onclick="playAudio()">
     </footer>
 
     <audio id="backgroundAudio" src="Woods-audio.mp3"></audio>
