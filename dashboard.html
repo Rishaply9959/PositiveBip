@@ -120,13 +120,13 @@
     <div class="overlay" id="overlay" onclick="closeDialog()"></div>
     <div class="dialog" id="dialog">
         <span class="dialog-close" onclick="closeDialog()">&times;</span>
-        <button onclick="logout()">Logout</button>
+        <button onclick="goToVideos()">Click to go</button>
     </div>
 
     <main>
         <div class="video-container">
             <video id="dashboardVideo" width="400" controls>
-                <source src="Rishaply.mp4" type="video/mp4">
+                <source src="your-video-file.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
         </div>
@@ -150,9 +150,8 @@
             document.getElementById('overlay').classList.remove('active');
         }
 
-        function logout() {
-            sessionStorage.removeItem('loggedIn');
-            window.location.href = 'index.html';  // Redirect to login page
+        function goToVideos() {
+            window.location.href = 'videos.html';
         }
 
         function playAudio() {
