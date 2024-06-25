@@ -14,6 +14,15 @@
             align-items: center;
         }
 
+        header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            background-color: #4caf50;
+        }
+
         #logo {
             font-size: 48px;
             font-weight: bold;
@@ -21,7 +30,7 @@
             margin-top: 20%;
         }
 
-        #video-list, #upload-form {
+        #video-list {
             display: none;
             width: 80%;
             max-width: 800px;
@@ -34,6 +43,13 @@
             margin: 10px 0;
             border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-details {
+            flex-grow: 1;
         }
 
         .video-item h3 {
@@ -42,6 +58,18 @@
 
         .video-item p {
             margin: 0 0 10px;
+        }
+
+        .video-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #upload-form {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
         }
 
         #upload-form input, #upload-form textarea, #upload-form button {
@@ -64,28 +92,38 @@
     </style>
 </head>
 <body>
-    <div id="logo">RP</div>
+    <header>
+        <span id="logo">RP</span>
+    </header>
+
     <div id="video-list"></div>
 
-    <div id="upload-form">
+    <form id="upload-form">
         <h2>Upload Video</h2>
         <input type="text" id="username" placeholder="Username" required>
         <input type="text" id="title" placeholder="Video Title" required>
         <textarea id="description" placeholder="Video Description" required></textarea>
         <input type="file" id="videoFile" accept="video/*" required>
-        <button onclick="uploadVideo()">Upload</button>
-    </div>
+        <button type="button" onclick="uploadVideo()">Upload</button>
+    </form>
 
     <script>
-        const videos = [];
+        let videos = JSON.parse(localStorage.getItem('videos')) || [];
+
+        function saveVideos() {
+            localStorage.setItem('videos', JSON.stringify(videos));
+        }
 
         function showVideos() {
             const videoList = document.getElementById('video-list');
             videoList.innerHTML = '';
 
-            videos.forEach(video => {
+            videos.forEach((video, index) => {
                 const videoItem = document.createElement('div');
                 videoItem.className = 'video-item';
+
+                const videoDetails = document.createElement('div');
+                videoDetails.className = 'video-details';
 
                 const videoTitle = document.createElement('h3');
                 videoTitle.textContent = video.title;
@@ -98,18 +136,46 @@
 
                 const videoElement = document.createElement('video');
                 videoElement.controls = true;
-                videoElement.src = URL.createObjectURL(video.file);
+                videoElement.src = video.fileURL;
 
-                videoItem.appendChild(videoTitle);
-                videoItem.appendChild(videoDescription);
-                videoItem.appendChild(videoUser);
-                videoItem.appendChild(videoElement);
+                videoDetails.appendChild(videoTitle);
+                videoDetails.appendChild(videoDescription);
+                videoDetails.appendChild(videoUser);
+                videoDetails.appendChild(videoElement);
+
+                const videoControls = document.createElement('div');
+                videoControls.className = 'video-controls';
+
+                const selectButton = document.createElement('button');
+                selectButton.textContent = 'Select';
+                selectButton.onclick = () => selectVideo(index);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteVideo(index);
+
+                videoControls.appendChild(selectButton);
+                videoControls.appendChild(deleteButton);
+
+                videoItem.appendChild(videoDetails);
+                videoItem.appendChild(videoControls);
 
                 videoList.appendChild(videoItem);
             });
 
             document.getElementById('video-list').style.display = 'block';
-            document.getElementById('upload-form').style.display = 'block';
+        }
+
+        function selectVideo(index) {
+            alert(`Selected video: ${videos[index].title}`);
+        }
+
+        function deleteVideo(index) {
+            if (confirm(`Are you sure you want to delete the video: ${videos[index].title}?`)) {
+                videos.splice(index, 1);
+                saveVideos();
+                showVideos();
+            }
         }
 
         function uploadVideo() {
@@ -119,8 +185,14 @@
             const videoFile = document.getElementById('videoFile').files[0];
 
             if (username && title && description && videoFile) {
-                videos.push({ username, title, description, file: videoFile });
-                showVideos();
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    videos.push({ username, title, description, fileURL: e.target.result });
+                    saveVideos();
+                    showVideos();
+                };
+                reader.readAsDataURL(videoFile);
+                document.getElementById('upload-form').reset();
             } else {
                 alert('Please fill in all fields and select a video file.');
             }
