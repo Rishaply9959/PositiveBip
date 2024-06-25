@@ -163,12 +163,7 @@
             var audio = document.getElementById('backgroundAudio');
             audio.pause();
             audio.currentTime = 0; // Reset the audio to the beginning
-        }
-
-        window.onload = function() {
-            if (sessionStorage.getItem('loggedIn') !== 'true') {
-                window.location.href = 'index.html';
-            }
+       
         }
     </script>
 </body>
