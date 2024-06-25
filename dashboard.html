@@ -55,6 +55,7 @@
         .play-button {
             width: 50px;
             height: 50px;
+            cursor: pointer;
         }
 
         .dialog {
@@ -132,8 +133,10 @@
     </main>
 
     <footer>
-        <img src="play-button.png" alt="Play Button" class="play-button">
+        <img src="play-button.png" alt="Play Button" class="play-button" onclick="playAudio()">
     </footer>
+
+    <audio id="backgroundAudio" src="Woods-audio.mp3"></audio>
 
     <script>
         function openDialog() {
@@ -149,6 +152,11 @@
         function logout() {
             sessionStorage.removeItem('loggedIn');
             window.location.href = 'index.html';  // Redirect to login page
+        }
+
+        function playAudio() {
+            var audio = document.getElementById('backgroundAudio');
+            audio.play();
         }
 
         window.onload = function() {
