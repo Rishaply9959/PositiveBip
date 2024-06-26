@@ -46,13 +46,12 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
         }
 
         .video-details {
             flex-grow: 1;
-            margin-right: 20px;
+            margin-bottom: 10px;
         }
 
         .video-item h3 {
@@ -61,6 +60,25 @@
 
         .video-item p {
             margin: 0 0 10px;
+        }
+
+        .video-actions {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+        }
+
+        .video-actions button {
+            background-color: #ff0000;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .video-actions button:hover {
+            background-color: #cc0000;
         }
 
         #upload-form {
@@ -137,13 +155,34 @@
                 videoElement.controls = true;
                 videoElement.src = video.fileURL;
 
+                const likeButton = document.createElement('button');
+                likeButton.textContent = `Like (${video.likes || 0})`;
+                likeButton.onclick = () => {
+                    video.likes = (video.likes || 0) + 1;
+                    saveVideos();
+                    showVideos();
+                };
+
+                const dislikeButton = document.createElement('button');
+                dislikeButton.textContent = `Dislike (${video.dislikes || 0})`;
+                dislikeButton.onclick = () => {
+                    video.dislikes = (video.dislikes || 0) + 1;
+                    saveVideos();
+                    showVideos();
+                };
+
+                const videoActions = document.createElement('div');
+                videoActions.className = 'video-actions';
+                videoActions.appendChild(likeButton);
+                videoActions.appendChild(dislikeButton);
+
                 videoDetails.appendChild(videoTitle);
                 videoDetails.appendChild(videoDescription);
                 videoDetails.appendChild(videoUser);
                 videoDetails.appendChild(videoElement);
+                videoDetails.appendChild(videoActions);
 
                 videoItem.appendChild(videoDetails);
-
                 videoList.appendChild(videoItem);
             });
         }
@@ -157,7 +196,7 @@
             if (username && title && description && videoFile) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    videos.push({ username, title, description, fileURL: e.target.result });
+                    videos.push({ username, title, description, fileURL: e.target.result, likes: 0, dislikes: 0 });
                     saveVideos();
                     showVideos();
                 };
