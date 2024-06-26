@@ -3,37 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Videos</title>
+    <title>YouTube-like Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: yellow;
+            background-color: #f9f9f9;
             margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        #logo {
-            font-size: 48px;
-            font-weight: bold;
-            color: #4caf50;
-            margin-top: 20%;
+        header {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #ff0000;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        #video-list, #upload-form {
-            display: none;
-            width: 80%;
-            max-width: 800px;
+        header h1 {
+            margin: 0;
+        }
+
+        header .logout {
+            cursor: pointer;
+        }
+
+        #video-list {
+            width: 90%;
+            max-width: 1200px;
             margin-top: 20px;
         }
 
         .video-item {
             background-color: #fff;
-            padding: 10px;
+            padding: 15px;
             margin: 10px 0;
-            border: 1px solid #ddd;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-details {
+            flex-grow: 1;
+            margin-right: 20px;
         }
 
         .video-item h3 {
@@ -44,6 +63,12 @@
             margin: 0 0 10px;
         }
 
+        #upload-form {
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+
         #upload-form input, #upload-form textarea, #upload-form button {
             display: block;
             width: 100%;
@@ -51,41 +76,53 @@
         }
 
         #upload-form button {
-            background: #4caf50;
+            background-color: #ff0000;
             border: none;
             color: #fff;
             cursor: pointer;
             padding: 10px;
+            border-radius: 5px;
         }
 
         #upload-form button:hover {
-            background: #45a049;
+            background-color: #cc0000;
         }
     </style>
 </head>
 <body>
-    <div id="logo">RP</div>
+    <header>
+        <h1>PositiveBip</h1>
+        <div class="logout">Logout</div>
+    </header>
+
     <div id="video-list"></div>
 
-    <div id="upload-form">
+    <form id="upload-form">
         <h2>Upload Video</h2>
         <input type="text" id="username" placeholder="Username" required>
         <input type="text" id="title" placeholder="Video Title" required>
         <textarea id="description" placeholder="Video Description" required></textarea>
         <input type="file" id="videoFile" accept="video/*" required>
-        <button onclick="uploadVideo()">Upload</button>
-    </div>
+        <button type="button" onclick="uploadVideo()">Upload</button>
+    </form>
 
     <script>
-        const videos = [];
+        let videos = JSON.parse(localStorage.getItem('videos')) || [];
+
+        function saveVideos() {
+            localStorage.setItem('videos', JSON.stringify(videos));
+        }
 
         function showVideos() {
             const videoList = document.getElementById('video-list');
             videoList.innerHTML = '';
 
-            videos.forEach(video => {
+            videos.forEach((video, index) => {
                 const videoItem = document.createElement('div');
                 videoItem.className = 'video-item';
+
+                const videoDetails = document.createElement('div');
+                videoDetails.className = 'video-details';
 
                 const videoTitle = document.createElement('h3');
                 videoTitle.textContent = video.title;
@@ -98,18 +135,17 @@
 
                 const videoElement = document.createElement('video');
                 videoElement.controls = true;
-                videoElement.src = URL.createObjectURL(video.file);
+                videoElement.src = video.fileURL;
 
-                videoItem.appendChild(videoTitle);
-                videoItem.appendChild(videoDescription);
-                videoItem.appendChild(videoUser);
-                videoItem.appendChild(videoElement);
+                videoDetails.appendChild(videoTitle);
+                videoDetails.appendChild(videoDescription);
+                videoDetails.appendChild(videoUser);
+                videoDetails.appendChild(videoElement);
+
+                videoItem.appendChild(videoDetails);
 
                 videoList.appendChild(videoItem);
             });
-
-            document.getElementById('video-list').style.display = 'block';
-            document.getElementById('upload-form').style.display = 'block';
         }
 
         function uploadVideo() {
@@ -119,18 +155,21 @@
             const videoFile = document.getElementById('videoFile').files[0];
 
             if (username && title && description && videoFile) {
-                videos.push({ username, title, description, file: videoFile });
-                showVideos();
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    videos.push({ username, title, description, fileURL: e.target.result });
+                    saveVideos();
+                    showVideos();
+                };
+                reader.readAsDataURL(videoFile);
+                document.getElementById('upload-form').reset();
             } else {
                 alert('Please fill in all fields and select a video file.');
             }
         }
 
         window.onload = function() {
-            setTimeout(() => {
-                document.getElementById('logo').style.display = 'none';
-                showVideos();
-            }, 2000);
+            showVideos();
         }
     </script>
 </body>
