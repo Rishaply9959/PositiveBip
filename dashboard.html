@@ -171,10 +171,23 @@
                     showVideos();
                 };
 
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => {
+                    if (video.username === prompt("Enter your username to delete the video:")) {
+                        videos.splice(index, 1);
+                        saveVideos();
+                        showVideos();
+                    } else {
+                        alert("You are not authorized to delete this video.");
+                    }
+                };
+
                 const videoActions = document.createElement('div');
                 videoActions.className = 'video-actions';
                 videoActions.appendChild(likeButton);
                 videoActions.appendChild(dislikeButton);
+                videoActions.appendChild(deleteButton);
 
                 videoDetails.appendChild(videoTitle);
                 videoDetails.appendChild(videoDescription);
