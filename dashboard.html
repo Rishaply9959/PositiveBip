@@ -36,12 +36,15 @@
         #search-form {
             display: flex;
             align-items: center;
+            margin-bottom: 20px;
         }
 
         #search-form input {
             padding: 5px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            flex: 1;
+            margin-right: 10px;
         }
 
         #video-list {
@@ -114,6 +117,12 @@
         #create-btn:hover {
             background-color: #cc0000;
         }
+
+        .video-player {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -128,19 +137,7 @@
     </div>
 
     <div id="video-list">
-        <div class="video-item">
-            <div class="video-details">
-                <h3>Sample Video Title</h3>
-                <p>Description of the video goes here.</p>
-            </div>
-            <div class="video-actions">
-                <button>Watch</button>
-                <button>Edit</button>
-                <button>Delete</button>
-            </div>
-        </div>
-
-        <!-- More video items can be added dynamically or statically -->
+        <!-- Video items will be dynamically added here -->
     </div>
 
     <footer>
