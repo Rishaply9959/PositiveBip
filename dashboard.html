@@ -1,5 +1,3 @@
-</body>
-</html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -105,21 +103,95 @@
         <div class="logout">Logout</div>
     </header>
 
-    <div id="video-list"></div>
-        title:-opus opus
-    <div class="video-container">
-            <video id="dashboardVideo" width="400" controls>
-                <source src="Rishaply.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-                hynm for the weekend
-                
-    <div id="video-list"></div>
- Title:-hynm for the weekend
-    <div class="video-container">
-            <video id="dashboardVideo" width="400" controls>
-                <source src="hynm-for-the-weekend.mp4" type="video/mp4">
-                Your browser does not support
-                
+    <div id="video-list">
+        <div class="video-item">
+            <h3>Title: Opus Opus</h3>
+            <div class="video-container">
+                <video id="dashboardVideo1" width="400" controls>
+                    <source src="Rishaply.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+        <div class="video-item">
+            <h3>Title: Hymn for the Weekend</h3>
+            <div class="video-container">
+                <video id="dashboardVideo2" width="400" controls>
+                    <source src="hynm-for-the-weekend.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
     </div>
+
+    <script>
+        let videos = [
+            {username: 'JohnDoe', title: 'Opus Opus', description: 'This is the first video.', fileHTML: '<div class="video-container"><video id="dashboardVideo1" width="400" controls><source src="Rishaply.mp4" type="video/mp4">Your browser does not support the video tag.</video></div>', likes: 0, dislikes: 0},
+            {username: 'JaneDoe', title: 'Hymn for the Weekend', description: 'This is the second video.', fileHTML: '<div class="video-container"><video id="dashboardVideo2" width="400" controls><source src="hynm-for-the-weekend.mp4" type="video/mp4">Your browser does not support the video tag.</video></div>', likes: 0, dislikes: 0}
+        ];
+
+        function showVideos(videosToShow) {
+            const videoList = document.getElementById('video-list');
+            videoList.innerHTML = '';
+
+            videosToShow.forEach((video, index) => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item';
+
+                const videoDetails = document.createElement('div');
+                videoDetails.className = 'video-details';
+
+                const videoTitle = document.createElement('h3');
+                videoTitle.textContent = video.title;
+
+                const videoDescription = document.createElement('p');
+                videoDescription.textContent = video.description;
+
+                const videoUser = document.createElement('p');
+                videoUser.textContent = `Uploaded by: ${video.username}`;
+
+                const videoElement = document.createElement('div');
+                videoElement.innerHTML = video.fileHTML;
+
+                const likeButton = document.createElement('button');
+                likeButton.textContent = `Like (${video.likes || 0})`;
+                likeButton.onclick = () => {
+                    video.likes = (video.likes || 0) + 1;
+                    showVideos(videos);
+                };
+
+                const dislikeButton = document.createElement('button');
+                dislikeButton.textContent = `Dislike (${video.dislikes || 0})`;
+                dislikeButton.onclick = () => {
+                    video.dislikes = (video.dislikes || 0) + 1;
+                    showVideos(videos);
+                };
+
+                const videoActions = document.createElement('div');
+                videoActions.className = 'video-actions';
+                videoActions.appendChild(likeButton);
+                videoActions.appendChild(dislikeButton);
+
+                videoDetails.appendChild(videoTitle);
+                videoDetails.appendChild(videoDescription);
+                videoDetails.appendChild(videoUser);
+                videoDetails.appendChild(videoElement);
+                videoDetails.appendChild(videoActions);
+
+                videoItem.appendChild(videoDetails);
+                videoList.appendChild(videoItem);
+            });
+        }
+
+        function searchVideos() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(searchTerm));
+            showVideos(filteredVideos);
+        }
+
+        window.onload = function() {
+            showVideos(videos);
+        }
+    </script>
 </body>
 </html>
