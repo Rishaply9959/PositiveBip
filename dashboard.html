@@ -107,11 +107,12 @@
 
     <div id="video-list"></div>
 
-    <script>
-        let videos = [
-            {username: 'Rishaply9959', title: 'Opus opus #Aditya birla song', description: 'First video from Rishaply.', fileURL: 'path/to/opus-video.mp4', likes: 0, dislikes: 0},
-            {username: 'Rishaply', title: 'Woods jupp hauff', description: 'This is the second video.', fileURL: 'path/to/woods-video.mp4', likes: 0, dislikes: 0}
-        ];
+    <div class="video-container">
+            <video id="dashboardVideo" width="400" controls>
+                <source src="Rishaply.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+    </div>
 
         function saveVideos() {
             localStorage.setItem('videos', JSON.stringify(videos));
