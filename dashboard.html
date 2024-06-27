@@ -1,3 +1,5 @@
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,6 +33,17 @@
 
         header .logout {
             cursor: pointer;
+        }
+
+        #search-form {
+            display: flex;
+            align-items: center;
+        }
+
+        #search-form input {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
         #video-list {
@@ -80,62 +93,35 @@
         .video-actions button:hover {
             background-color: #cc0000;
         }
-
-        #upload-form {
-            width: 90%;
-            max-width: 1200px;
-            margin-top: 20px;
-        }
-
-        #upload-form input, #upload-form textarea, #upload-form button {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        #upload-form button {
-            background-color: #ff0000;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        #upload-form button:hover {
-            background-color: #cc0000;
-        }
     </style>
 </head>
 <body>
     <header>
         <h1>PositiveBip</h1>
+        <div id="search-form">
+            <input type="text" id="searchInput" placeholder="Search videos...">
+            <button onclick="searchVideos()">Search</button>
+        </div>
         <div class="logout">Logout</div>
     </header>
 
     <div id="video-list"></div>
 
-    <form id="upload-form">
-        <h2>Upload Video</h2>
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="text" id="title" placeholder="Video Title" required>
-        <textarea id="description" placeholder="Video Description" required></textarea>
-        <input type="file" id="videoFile" accept="video/*" required>
-        <button type="button" onclick="uploadVideo()">Upload</button>
-    </form>
-
     <script>
-        let videos = JSON.parse(localStorage.getItem('videos')) || [];
+        let videos = [
+            {username: 'JohnDoe', title: 'First Video', description: 'This is the first video.', fileURL: 'path/to/Rishaply.mp4', likes: 0, dislikes: 0},
+            {username: 'JaneDoe', title: 'Second Video', description: 'This is the second video.', fileURL: 'path/to/second-video.mp4', likes: 0, dislikes: 0}
+        ];
 
         function saveVideos() {
             localStorage.setItem('videos', JSON.stringify(videos));
         }
 
-        function showVideos() {
+        function showVideos(videosToShow) {
             const videoList = document.getElementById('video-list');
             videoList.innerHTML = '';
 
-            videos.forEach((video, index) => {
+            videosToShow.forEach((video, index) => {
                 const videoItem = document.createElement('div');
                 videoItem.className = 'video-item';
 
@@ -160,7 +146,7 @@
                 likeButton.onclick = () => {
                     video.likes = (video.likes || 0) + 1;
                     saveVideos();
-                    showVideos();
+                    showVideos(videos);
                 };
 
                 const dislikeButton = document.createElement('button');
@@ -168,26 +154,13 @@
                 dislikeButton.onclick = () => {
                     video.dislikes = (video.dislikes || 0) + 1;
                     saveVideos();
-                    showVideos();
-                };
-
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = () => {
-                    if (video.username === prompt("Enter your username to delete the video:")) {
-                        videos.splice(index, 1);
-                        saveVideos();
-                        showVideos();
-                    } else {
-                        alert("You are not authorized to delete this video.");
-                    }
+                    showVideos(videos);
                 };
 
                 const videoActions = document.createElement('div');
                 videoActions.className = 'video-actions';
                 videoActions.appendChild(likeButton);
                 videoActions.appendChild(dislikeButton);
-                videoActions.appendChild(deleteButton);
 
                 videoDetails.appendChild(videoTitle);
                 videoDetails.appendChild(videoDescription);
@@ -200,28 +173,14 @@
             });
         }
 
-        function uploadVideo() {
-            const username = document.getElementById('username').value;
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            const videoFile = document.getElementById('videoFile').files[0];
-
-            if (username && title && description && videoFile) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    videos.push({ username, title, description, fileURL: e.target.result, likes: 0, dislikes: 0 });
-                    saveVideos();
-                    showVideos();
-                };
-                reader.readAsDataURL(videoFile);
-                document.getElementById('upload-form').reset();
-            } else {
-                alert('Please fill in all fields and select a video file.');
-            }
+        function searchVideos() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(searchTerm));
+            showVideos(filteredVideos);
         }
 
         window.onload = function() {
-            showVideos();
+            showVideos(videos);
         }
     </script>
 </body>
