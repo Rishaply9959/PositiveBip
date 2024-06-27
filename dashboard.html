@@ -92,145 +92,70 @@
             background-color: #cc0000;
         }
 
-        #upload-form {
-            width: 90%;
-            max-width: 1200px;
-            margin-top: 20px;
-        }
-
-        #upload-form input, #upload-form textarea, #upload-form button {
-            display: block;
+        footer {
             width: 100%;
-            margin-bottom: 10px;
-        }
-
-        #upload-form button {
-            background-color: #ff0000;
-            border: none;
+            background-color: #333;
             color: #fff;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 5px;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
         }
 
-        #upload-form button:hover {
+        #create-btn {
+            background-color: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #create-btn:hover {
             background-color: #cc0000;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>PositiveBip</h1>
-        <div id="search-form">
-            <input type="text" id="searchInput" placeholder="Search videos...">
-            <button onclick="searchVideos()">Search</button>
-        </div>
+        <h1>YouTube-like Dashboard</h1>
         <div class="logout">Logout</div>
     </header>
 
-    <div id="video-list"></div>
+    <div id="search-form">
+        <input type="text" placeholder="Search...">
+        <button>Search</button>
+    </div>
 
-    <form id="upload-form">
-        <h2>Upload Video</h2>
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="text" id="title" placeholder="Video Title" required>
-        <textarea id="description" placeholder="Video Description" required></textarea>
-        <input type="file" id="videoFile" accept="video/*" required>
-        <button type="button" onclick="uploadVideo()">Upload</button>
-    </form>
+    <div id="video-list">
+        <div class="video-item">
+            <div class="video-details">
+                <h3>Sample Video Title</h3>
+                <p>Description of the video goes here.</p>
+            </div>
+            <div class="video-actions">
+                <button>Watch</button>
+                <button>Edit</button>
+                <button>Delete</button>
+            </div>
+        </div>
+
+        <!-- More video items can be added dynamically or statically -->
+    </div>
+
+    <footer>
+        <button id="create-btn">Create</button>
+    </footer>
 
     <script>
-        let videos = JSON.parse(localStorage.getItem('videos')) || [];
+        document.querySelector('.logout').addEventListener('click', function() {
+            // Handle logout functionality
+            alert('Logged out successfully!');
+        });
 
-        function saveVideos() {
-            localStorage.setItem('videos', JSON.stringify(videos));
-        }
-
-        function showVideos(videosToShow = videos) {
-            const videoList = document.getElementById('video-list');
-            videoList.innerHTML = '';
-
-            videosToShow.forEach((video, index) => {
-                const videoItem = document.createElement('div');
-                videoItem.className = 'video-item';
-
-                const videoDetails = document.createElement('div');
-                videoDetails.className = 'video-details';
-
-                const videoTitle = document.createElement('h3');
-                videoTitle.textContent = video.title;
-
-                const videoDescription = document.createElement('p');
-                videoDescription.textContent = video.description;
-
-                const videoUser = document.createElement('p');
-                videoUser.textContent = `Uploaded by: ${video.username}`;
-
-                const videoElement = document.createElement('video');
-                videoElement.controls = true;
-                videoElement.src = video.fileURL;
-
-                const likeButton = document.createElement('button');
-                likeButton.textContent = `Like (${video.likes || 0})`;
-                likeButton.onclick = () => {
-                    video.likes = (video.likes || 0) + 1;
-                    saveVideos();
-                    showVideos();
-                };
-
-                const dislikeButton = document.createElement('button');
-                dislikeButton.textContent = `Dislike (${video.dislikes || 0})`;
-                dislikeButton.onclick = () => {
-                    video.dislikes = (video.dislikes || 0) + 1;
-                    saveVideos();
-                    showVideos();
-                };
-
-                const videoActions = document.createElement('div');
-                videoActions.className = 'video-actions';
-                videoActions.appendChild(likeButton);
-                videoActions.appendChild(dislikeButton);
-
-                videoDetails.appendChild(videoTitle);
-                videoDetails.appendChild(videoDescription);
-                videoDetails.appendChild(videoUser);
-                videoDetails.appendChild(videoElement);
-                videoDetails.appendChild(videoActions);
-
-                videoItem.appendChild(videoDetails);
-                videoList.appendChild(videoItem);
-            });
-        }
-
-        function uploadVideo() {
-            const username = document.getElementById('username').value;
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            const videoFile = document.getElementById('videoFile').files[0];
-
-            if (username && title && description && videoFile) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    videos.push({ username, title, description, fileURL: e.target.result, likes: 0, dislikes: 0 });
-                    saveVideos();
-                    showVideos();
-                };
-                reader.readAsDataURL(videoFile);
-                document.getElementById('upload-form').reset();
-            } else {
-                alert('Please fill in all fields and select a video file.');
-            }
-        }
-
-        function searchVideos() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(searchTerm));
-            showVideos(filteredVideos);
-        }
-
-        window.onload = function() {
-            showVideos();
-        }
+        document.getElementById('create-btn').addEventListener('click', function() {
+            window.location.href = 'upload.html'; // Redirect to upload.html on button click
+        });
     </script>
 </body>
 </html>
