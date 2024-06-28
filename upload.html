@@ -17,7 +17,7 @@
     function uploadVideo() {
         const fileInput = document.getElementById('videoUpload');
         const file = fileInput.files[0];
-
+        
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
