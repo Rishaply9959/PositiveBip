@@ -3,138 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube-like Dashboard</title>
+    <title>Video Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
+        }
+        .video-display {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-wrap: wrap;
         }
-
-        header {
-            width: 100%;
-            padding: 10px 20px;
-            background-color: #ff0000;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .video-container {
+            margin: 10px;
         }
-
-        header h1 {
-            margin: 0;
-        }
-
-        header .logout {
-            cursor: pointer;
-        }
-
-        #search-form {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        #search-form input {
-            padding: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            flex: 1;
-            margin-right: 10px;
-        }
-
-        #video-list {
-            width: 90%;
-            max-width: 1200px;
-            margin-top: 20px;
-        }
-
-        .video-item {
-            background-color: #fff;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .video-details {
-            flex-grow: 1;
-            margin-bottom: 10px;
-        }
-
-        .video-item h3 {
-            margin: 0 0 5px;
-        }
-
-        .video-item p {
-            margin: 0 0 10px;
-        }
-
-        .video-actions {
-            display: flex;
-            justify-content: flex-start;
-            gap: 10px;
-        }
-
-        .video-actions button {
-            background-color: #ff0000;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .video-actions button:hover {
-            background-color: #cc0000;
-        }
-
-        footer {
-            width: 100%;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 10px 0;
-            position: fixed;
-            bottom: 0;
-        }
-
-        #create-btn {
-            background-color: #ff0000;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #create-btn:hover {
-            background-color: #cc0000;
-        }
-
-        .video-player {
-            width: 100%;
-            max-width: 800px;
-            margin-bottom: 20px;
+        video {
+            width: 300px;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>YouTube-like Dashboard</h1>
-        <div class="logout">Logout</div>
-    </header>
 
-    <div id="search-form">
-        <input type="text" placeholder="Search...">
-        <button>Search</button>
-    
 <div class="video-display" id="videoDisplay">
     <!-- Uploaded videos will be displayed here -->
 </div>
@@ -159,16 +47,6 @@
 
     window.onload = loadVideos;
 </script>
-        
-    <footer>
-        <button id="create-btn">Create</button>
-    </footer>
 
-    <script>
-
-        document.getElementById('create-btn').addEventListener('click', function() {
-            window.location.href = 'upload.html'; // Redirect to upload.html on button click
-        });
-    </script>
 </body>
 </html>
