@@ -19,21 +19,21 @@
         const file = fileInput.files[0];
         
         if (file) {
-            const videoUrl = URL.createObjectURL(file);
-            const userId = getUserId();
-            const videoData = { url: videoUrl, userId: userId };
-            
-            let videos = JSON.parse(localStorage.getItem('videos')) || [];
-            videos.push(videoData);
-            localStorage.setItem('videos', JSON.stringify(videos));
-            window.location.href = 'dashboard.html';
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const videoData = { url: event.target.result, userId: getUserId() };
+                let videos = JSON.parse(localStorage.getItem('videos')) || [];
+                videos.push(videoData);
+                localStorage.setItem('videos', JSON.stringify(videos));
+                window.location.href = 'dashboard.html';
+            };
+            reader.readAsDataURL(file);
         } else {
             alert('Please select a video to upload.');
         }
     }
 
     function getUserId() {
-        // Generate a simple user ID. In a real application, use proper authentication.
         let userId = localStorage.getItem('userId');
         if (!userId) {
             userId = 'user_' + new Date().getTime();
