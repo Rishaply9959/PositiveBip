@@ -3,86 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Video</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        form {
-            width: 100%;
-            max-width: 600px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        label, input, textarea {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input[type="file"] {
-            margin-top: 5px;
-        }
-
-        button[type="submit"] {
-            background-color: #ff0000;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #cc0000;
-        }
-    </style>
+    <title>Video Upload</title>
 </head>
 <body>
-    <h1>Upload Video</h1>
-    <form id="upload-form" enctype="multipart/form-data">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
 
-        <label for="video-title">Video Title:</label>
-        <input type="text" id="video-title" name="video-title" required>
+<div class="upload-section">
+    <h2>Upload Your Video</h2>
+    <input type="file" id="videoUpload" accept="video/*">
+    <button onclick="uploadVideo()">Upload</button>
+</div>
 
-        <label for="description">Description:</label>
-        <textarea id="description" name="description" rows="4" required></textarea>
-
-        <label for="video-file">Choose a video file:</label>
-        <input type="file" id="video-file" name="video-file" accept="video/*" required>
-
-        <button type="submit">Upload</button>
-    </form>
-
-    <script>
-        document.getElementById('upload-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            // Simulate upload process (replace with actual AJAX call or form submission)
-            const formData = new FormData(this);
-
-            // Simulate success message (replace with actual success handling)
-            alert('Video uploaded successfully!');
-
-            // Redirect back to index.html after upload
+<script>
+    function uploadVideo() {
+        const fileInput = document.getElementById('videoUpload');
+        const file = fileInput.files[0];
+        
+        if (file) {
+            const videoUrl = URL.createObjectURL(file);
+            let videos = JSON.parse(localStorage.getItem('videos')) || [];
+            videos.push(videoUrl);
+            localStorage.setItem('videos', JSON.stringify(videos));
             window.location.href = 'dashboard.html';
-        });
-    </script>
+        } else {
+            alert('Please select a video to upload.');
+        }
+    }
+</script>
+
 </body>
 </html>
