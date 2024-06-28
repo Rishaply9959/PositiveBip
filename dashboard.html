@@ -134,21 +134,37 @@
     <div id="search-form">
         <input type="text" placeholder="Search...">
         <button>Search</button>
-    </div>
+    
+<div class="video-display" id="videoDisplay">
+    <!-- Uploaded videos will be displayed here -->
+</div>
 
-    <div id="video-list">
-        <!-- Video items will be dynamically added here -->
-    </div>
+<script>
+    function loadVideos() {
+        const videoDisplay = document.getElementById('videoDisplay');
+        const videos = JSON.parse(localStorage.getItem('videos')) || [];
+        
+        videos.forEach(url => {
+            const videoContainer = document.createElement('div');
+            videoContainer.classList.add('video-container');
+            
+            const videoElement = document.createElement('video');
+            videoElement.setAttribute('controls', 'controls');
+            videoElement.src = url;
+            
+            videoContainer.appendChild(videoElement);
+            videoDisplay.appendChild(videoContainer);
+        });
+    }
 
+    window.onload = loadVideos;
+</script>
+        
     <footer>
         <button id="create-btn">Create</button>
     </footer>
 
     <script>
-        document.querySelector('.logout').addEventListener('click', function() {
-            // Handle logout functionality
-            alert('Logged out successfully!');
-        });
 
         document.getElementById('create-btn').addEventListener('click', function() {
             window.location.href = 'upload.html'; // Redirect to upload.html on button click
