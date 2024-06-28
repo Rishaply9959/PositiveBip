@@ -17,11 +17,14 @@
     function uploadVideo() {
         const fileInput = document.getElementById('videoUpload');
         const file = fileInput.files[0];
-        
+
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
-                const videoData = { url: event.target.result, userId: getUserId() };
+                const videoData = {
+                    url: event.target.result,
+                    userId: getUserId()
+                };
                 let videos = JSON.parse(localStorage.getItem('videos')) || [];
                 videos.push(videoData);
                 localStorage.setItem('videos', JSON.stringify(videos));
