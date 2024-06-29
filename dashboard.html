@@ -3,81 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Upload and Display</title>
+    <title>YouTube Clone</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .upload-section {
-            margin: 20px;
-        }
-        .video-display {
+        header {
+            background-color: #FF0000;
+            color: white;
+            padding: 10px 20px;
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
         }
-        .video-container {
-            margin: 10px;
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
         }
-        video {
-            width: 300px;
+        .search-bar {
+            display: flex;
+            align-items: center;
+        }
+        .search-bar input {
+            padding: 5px;
+            font-size: 16px;
+        }
+        .search-bar button {
+            padding: 5px 10px;
+            font-size: 16px;
+            background-color: white;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #f1f1f1;
+            padding: 10px;
+        }
+        nav a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+        .content {
+            display: flex;
+            padding: 20px;
+        }
+        .sidebar {
+            width: 20%;
+            background-color: #f1f1f1;
+            padding: 20px;
+        }
+        .main-content {
+            width: 80%;
+            padding: 20px;
+        }
+        .video {
+            margin-bottom: 20px;
+        }
+        .video video {
+            max-width: 100%;
             height: auto;
+        }
+        .video-title {
+            font-size: 18px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="logo">YouTube</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search">
+            <button>Search</button>
+        </div>
+        <div class="user-options">
+            <button onclick="document.getElementById('uploadModal').style.display='block'">Upload</button>
+            <button>Sign In</button>
+        </div>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Trending</a>
+        <a href="#">Subscriptions</a>
+        <a href="#">Library</a>
+    </nav>
+    <div class="content">
+        <div class="sidebar">
+            <p>Sidebar content (e.g., links to playlists, subscriptions)</p>
+        </div>
+        <div class="main-content" id="videoContainer">
+            <!-- Uploaded videos will appear here -->
+        </div>
+    </div>
 
-<div class="upload-section">
-    <h2>Upload Your Video</h2>
-    <input type="file" id="videoUpload" accept="video/*">
-</div>
+    <!-- Upload Modal -->
+    <div id="uploadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+        <div style="background:white; padding:20px; border-radius:5px;">
+            <h2>Upload Video</h2>
+            <input type="file" id="videoUpload" accept="video/*">
+            <button onclick="uploadVideo()">Upload</button>
+            <button onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
 
-<div class="video-display" id="videoDisplay">
-    <!-- Uploaded videos will be displayed here -->
-</div>
+    <script>
+        // Initialize IndexedDB
+        let db;
+        const request = indexedDB.open('videoDB', 1);
 
-<script>
-    document.getElementById('videoUpload').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const videoData = e.target.result;
-                saveVideoToLocalStorage(videoData);
-                displayVideo(videoData);
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+            objectStore.createIndex('name', 'name', { unique: false });
+            objectStore.createIndex('dataURL', 'dataURL', { unique: false });
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            loadVideos();
+        };
+
+        request.onerror = function(event) {
+            console.error('Database error:', event.target.error);
+        };
+
+        function uploadVideo() {
+            const videoFile = document.getElementById('videoUpload').files[0];
+            if (videoFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataURL = event.target.result;
+                    const transaction = db.transaction(['videos'], 'readwrite');
+                    const objectStore = transaction.objectStore('videos');
+                    const request = objectStore.add({ name: videoFile.name, dataURL: dataURL });
+
+                    request.onsuccess = function() {
+                        loadVideos();
+                        document.getElementById('uploadModal').style.display = 'none';
+                        document.getElementById('videoUpload').value = '';
+                    };
+
+                    request.onerror = function() {
+                        alert('Error uploading video.');
+                    };
+                };
+                reader.readAsDataURL(videoFile);
+            } else {
+                alert('Please select a video file to upload.');
+            }
+        }
+
+        function loadVideos() {
+            const transaction = db.transaction(['videos'], 'readonly');
+            const objectStore = transaction.objectStore('videos');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function(event) {
+                const videos = event.target.result;
+                const videoContainer = document.getElementById('videoContainer');
+                videoContainer.innerHTML = '';
+
+                videos.forEach(video => {
+                    const videoElement = document.createElement('div');
+                    videoElement.classList.add('video');
+                    
+                    const videoTitle = document.createElement('div');
+                    videoTitle.classList.add('video-title');
+                    videoTitle.textContent = video.name;
+                    
+                    const videoTag = document.createElement('video');
+                    videoTag.controls = true;
+                    const source = document.createElement('source');
+                    source.src = video.dataURL;
+                    source.type = 'video/mp4';
+                    videoTag.appendChild(source);
+                    
+                    videoElement.appendChild(videoTag);
+                    videoElement.appendChild(videoTitle);
+                    
+                    videoContainer.appendChild(videoElement);
+                });
             };
-            reader.readAsDataURL(file);
         }
-    });
-
-    function saveVideoToLocalStorage(videoData) {
-        localStorage.setItem('savedVideo', videoData);
-    }
-
-    function loadVideoFromLocalStorage() {
-        const videoData = localStorage.getItem('savedVideo');
-        if (videoData) {
-            displayVideo(videoData);
-        }
-    }
-
-    function displayVideo(videoData) {
-        const videoDisplay = document.getElementById('videoDisplay');
-        videoDisplay.innerHTML = ''; // Clear any existing videos
-
-        const videoContainer = document.createElement('div');
-        videoContainer.classList.add('video-container');
-        
-        const videoElement = document.createElement('video');
-        videoElement.setAttribute('controls', 'controls');
-        videoElement.src = videoData;
-        
-        videoContainer.appendChild(videoElement);
-        videoDisplay.appendChild(videoContainer);
-    }
-
-    // Load video from localStorage on page load
-    window.onload = loadVideoFromLocalStorage;
-</script>
-
+    </script>
 </body>
 </html>
