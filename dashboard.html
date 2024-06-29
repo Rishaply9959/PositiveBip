@@ -3,17 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Dashboard</title>
+    <title>Video Upload and Display</title>
     <style>
         body {
             font-family: Arial, sans-serif;
         }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: #f8f8f8;
+        .upload-section {
+            margin: 20px;
         }
         .video-display {
             display: flex;
@@ -21,28 +17,18 @@
         }
         .video-container {
             margin: 10px;
-            position: relative;
         }
         video {
             width: 300px;
             height: auto;
         }
-        .remove-btn {
-            display: block;
-            margin-top: 5px;
-            padding: 5px;
-            background-color: red;
-            color: white;
-            text-align: center;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <button onclick="window.location.href='upload.html'">Create</button>
-    <h1>Video Dashboard</h1>
+<div class="upload-section">
+    <h2>Upload Your Video</h2>
+    <input type="file" id="videoUpload" accept="video/*">
 </div>
 
 <div class="video-display" id="videoDisplay">
@@ -50,41 +36,26 @@
 </div>
 
 <script>
-    function loadVideos() {
+    document.getElementById('videoUpload').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const videoUrl = URL.createObjectURL(file);
+            displayVideo(videoUrl);
+        }
+    });
+
+    function displayVideo(url) {
         const videoDisplay = document.getElementById('videoDisplay');
-        const videos = JSON.parse(localStorage.getItem('videos')) || [];
-        const userId = localStorage.getItem('userId');
-
-        videos.forEach((videoData, index) => {
-            const videoContainer = document.createElement('div');
-            videoContainer.classList.add('video-container');
-            
-            const videoElement = document.createElement('video');
-            videoElement.setAttribute('controls', 'controls');
-            videoElement.src = videoData.url;
-            
-            videoContainer.appendChild(videoElement);
-
-            if (videoData.userId === userId) {
-                const removeBtn = document.createElement('div');
-                removeBtn.classList.add('remove-btn');
-                removeBtn.innerText = 'Remove';
-                removeBtn.onclick = () => removeVideo(index);
-                videoContainer.appendChild(removeBtn);
-            }
-            
-            videoDisplay.appendChild(videoContainer);
-        });
+        const videoContainer = document.createElement('div');
+        videoContainer.classList.add('video-container');
+        
+        const videoElement = document.createElement('video');
+        videoElement.setAttribute('controls', 'controls');
+        videoElement.src = url;
+        
+        videoContainer.appendChild(videoElement);
+        videoDisplay.appendChild(videoContainer);
     }
-
-    function removeVideo(index) {
-        let videos = JSON.parse(localStorage.getItem('videos')) || [];
-        videos.splice(index, 1);
-        localStorage.setItem('videos', JSON.stringify(videos));
-        window.location.reload();
-    }
-
-    window.onload = loadVideos;
 </script>
 
 </body>
