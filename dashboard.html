@@ -39,23 +39,44 @@
     document.getElementById('videoUpload').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
-            const videoUrl = URL.createObjectURL(file);
-            displayVideo(videoUrl);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const videoData = e.target.result;
+                saveVideoToLocalStorage(videoData);
+                displayVideo(videoData);
+            };
+            reader.readAsDataURL(file);
         }
     });
 
-    function displayVideo(url) {
+    function saveVideoToLocalStorage(videoData) {
+        localStorage.setItem('savedVideo', videoData);
+    }
+
+    function loadVideoFromLocalStorage() {
+        const videoData = localStorage.getItem('savedVideo');
+        if (videoData) {
+            displayVideo(videoData);
+        }
+    }
+
+    function displayVideo(videoData) {
         const videoDisplay = document.getElementById('videoDisplay');
+        videoDisplay.innerHTML = ''; // Clear any existing videos
+
         const videoContainer = document.createElement('div');
         videoContainer.classList.add('video-container');
         
         const videoElement = document.createElement('video');
         videoElement.setAttribute('controls', 'controls');
-        videoElement.src = url;
+        videoElement.src = videoData;
         
         videoContainer.appendChild(videoElement);
         videoDisplay.appendChild(videoContainer);
     }
+
+    // Load video from localStorage on page load
+    window.onload = loadVideoFromLocalStorage;
 </script>
 
 </body>
