@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Clone P2P</title>
+    <title>YouTube Clone P2P with IndexedDB</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -76,7 +76,7 @@
 </head>
 <body>
     <header>
-        <div class="logo">YouTube P2P</div>
+        <div class="logo">YouTube Clone</div>
         <div class="search-bar">
             <input type="text" placeholder="Search">
             <button>Search</button>
@@ -112,107 +112,103 @@
     </div>
 
     <script>
-        const peerConnections = {};
-        const config = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' }
-            ]
-        };
+        const dbName = 'videoDB';
+        let db;
 
-        const signalingServerUrl = 'wss://your-signaling-server-url';
-        const socket = new WebSocket(signalingServerUrl);
+        function openDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
 
-        socket.onmessage = (message) => {
-            const data = JSON.parse(message.data);
-            switch (data.type) {
-                case 'offer':
-                    handleOffer(data.offer, data.from);
-                    break;
-                case 'answer':
-                    handleAnswer(data.answer, data.from);
-                    break;
-                case 'candidate':
-                    handleCandidate(data.candidate, data.from);
-                    break;
-            }
-        };
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+                };
 
-        async function createPeerConnection(id) {
-            const pc = new RTCPeerConnection(config);
-            pc.onicecandidate = ({ candidate }) => {
-                if (candidate) {
-                    sendToServer({
-                        type: 'candidate',
-                        candidate: candidate,
-                        to: id
-                    });
-                }
-            };
-            pc.ontrack = (event) => {
-                const videoElement = document.createElement('video');
-                videoElement.srcObject = event.streams[0];
-                videoElement.controls = true;
-                document.getElementById('videoContainer').appendChild(videoElement);
-            };
-            peerConnections[id] = pc;
-            return pc;
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    reject('Error opening database: ' + event.target.errorCode);
+                };
+            });
         }
 
-        function sendToServer(message) {
-            socket.send(JSON.stringify(message));
+        function saveVideoToDB(videoFile) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['videos'], 'readwrite');
+                const store = transaction.objectStore('videos');
+                const videoData = {
+                    name: videoFile.name,
+                    blob: videoFile
+                };
+                const request = store.add(videoData);
+
+                request.onsuccess = () => {
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    reject('Error saving video: ' + event.target.errorCode);
+                };
+            });
+        }
+
+        function loadVideosFromDB() {
+            const transaction = db.transaction(['videos'], 'readonly');
+            const store = transaction.objectStore('videos');
+            const request = store.getAll();
+
+            request.onsuccess = (event) => {
+                const videos = event.target.result;
+                displayVideos(videos);
+            };
+
+            request.onerror = (event) => {
+                console.error('Error loading videos: ' + event.target.errorCode);
+            };
+        }
+
+        function displayVideos(videos) {
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = '';
+
+            videos.forEach(video => {
+                const videoElement = document.createElement('div');
+                videoElement.classList.add('video');
+
+                const videoTitle = document.createElement('div');
+                videoTitle.classList.add('video-title');
+                videoTitle.textContent = video.name;
+
+                const videoTag = document.createElement('video');
+                videoTag.controls = true;
+                const url = URL.createObjectURL(video.blob);
+                videoTag.src = url;
+
+                videoElement.appendChild(videoTag);
+                videoElement.appendChild(videoTitle);
+
+                videoContainer.appendChild(videoElement);
+            });
         }
 
         async function uploadVideo() {
             const videoFile = document.getElementById('videoUpload').files[0];
             if (videoFile) {
-                const videoElement = document.createElement('video');
-                videoElement.controls = true;
-                videoElement.src = URL.createObjectURL(videoFile);
-                document.getElementById('videoContainer').appendChild(videoElement);
-
-                const peers = Object.keys(peerConnections);
-                peers.forEach(async (peerId) => {
-                    const pc = peerConnections[peerId];
-                    const stream = videoElement.captureStream();
-                    stream.getTracks().forEach(track => pc.addTrack(track, stream));
-                    const offer = await pc.createOffer();
-                    await pc.setLocalDescription(offer);
-                    sendToServer({
-                        type: 'offer',
-                        offer: offer,
-                        to: peerId
-                    });
-                });
+                await saveVideoToDB(videoFile);
+                loadVideosFromDB();
+                document.getElementById('uploadModal').style.display = 'none';
+                document.getElementById('videoUpload').value = '';
             } else {
                 alert('Please select a video file to upload.');
             }
         }
 
-        async function handleOffer(offer, from) {
-            const pc = await createPeerConnection(from);
-            await pc.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            sendToServer({
-                type: 'answer',
-                answer: answer,
-                to: from
-            });
-        }
-
-        async function handleAnswer(answer, from) {
-            const pc = peerConnections[from];
-            await pc.setRemoteDescription(new RTCSessionDescription(answer));
-        }
-
-        function handleCandidate(candidate, from) {
-            const pc = peerConnections[from];
-            pc.addIceCandidate(new RTCIceCandidate(candidate));
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const username = prompt('Enter your username');
-            sendToServer({ type: 'join', name: username });
+        document.addEventListener('DOMContentLoaded', async () => {
+            await openDatabase();
+            loadVideosFromDB();
         });
     </script>
 </body>
