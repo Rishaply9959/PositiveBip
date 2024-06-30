@@ -112,59 +112,37 @@
     </div>
 
     <script>
-        // Initialize IndexedDB
-        let db;
-        const request = indexedDB.open('videoDB', 1);
-
-        request.onupgradeneeded = function(event) {
-            db = event.target.result;
-            const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
-            objectStore.createIndex('name', 'name', { unique: false });
-            objectStore.createIndex('dataURL', 'dataURL', { unique: false });
-        };
-
-        request.onsuccess = function(event) {
-            db = event.target.result;
-            loadVideos();
-        };
-
-        request.onerror = function(event) {
-            console.error('Database error:', event.target.error);
-        };
-
-        function uploadVideo() {
+        async function uploadVideo() {
             const videoFile = document.getElementById('videoUpload').files[0];
             if (videoFile) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const dataURL = event.target.result;
-                    const transaction = db.transaction(['videos'], 'readwrite');
-                    const objectStore = transaction.objectStore('videos');
-                    const request = objectStore.add({ name: videoFile.name, dataURL: dataURL });
+                const formData = new FormData();
+                formData.append('video', videoFile);
 
-                    request.onsuccess = function() {
+                try {
+                    const response = await fetch('http://localhost:3000/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (result.success) {
                         loadVideos();
                         document.getElementById('uploadModal').style.display = 'none';
                         document.getElementById('videoUpload').value = '';
-                    };
-
-                    request.onerror = function() {
+                    } else {
                         alert('Error uploading video.');
-                    };
-                };
-                reader.readAsDataURL(videoFile);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
             } else {
                 alert('Please select a video file to upload.');
             }
         }
 
-        function loadVideos() {
-            const transaction = db.transaction(['videos'], 'readonly');
-            const objectStore = transaction.objectStore('videos');
-            const request = objectStore.getAll();
-
-            request.onsuccess = function(event) {
-                const videos = event.target.result;
+        async function loadVideos() {
+            try {
+                const response = await fetch('http://localhost:3000/videos');
+                const videos = await response.json();
                 const videoContainer = document.getElementById('videoContainer');
                 videoContainer.innerHTML = '';
 
@@ -179,7 +157,7 @@
                     const videoTag = document.createElement('video');
                     videoTag.controls = true;
                     const source = document.createElement('source');
-                    source.src = video.dataURL;
+                    source.src = video.url;
                     source.type = 'video/mp4';
                     videoTag.appendChild(source);
                     
@@ -188,8 +166,12 @@
                     
                     videoContainer.appendChild(videoElement);
                 });
-            };
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', loadVideos);
     </script>
 </body>
 </html>
