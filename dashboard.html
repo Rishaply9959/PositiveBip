@@ -72,6 +72,15 @@
             font-size: 18px;
             font-weight: bold;
         }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f1f1f1;
+            padding: 10px 20px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -109,6 +118,11 @@
             <button onclick="uploadVideo()">Upload</button>
             <button onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
         </div>
+    </div>
+
+    <div class="footer">
+        <a href="#">Home</a>
+        <a href="#">History</a>
     </div>
 
     <script>
@@ -182,12 +196,33 @@
                     source.src = video.dataURL;
                     source.type = 'video/mp4';
                     videoTag.appendChild(source);
-                    
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.onclick = function() {
+                        deleteVideo(video.id);
+                    };
+
                     videoElement.appendChild(videoTag);
                     videoElement.appendChild(videoTitle);
+                    videoElement.appendChild(deleteButton);
                     
                     videoContainer.appendChild(videoElement);
                 });
+            };
+        }
+
+        function deleteVideo(id) {
+            const transaction = db.transaction(['videos'], 'readwrite');
+            const objectStore = transaction.objectStore('videos');
+            const request = objectStore.delete(id);
+
+            request.onsuccess = function() {
+                loadVideos();
+            };
+
+            request.onerror = function() {
+                alert('Error deleting video.');
             };
         }
     </script>
