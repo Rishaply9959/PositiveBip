@@ -120,7 +120,7 @@
             <h2>Upload Video</h2>
             <input type="file" id="videoUpload" accept="video/*">
             <input type="text" id="videoTitle" placeholder="Video Title">
-            <button onclick="uploadVideo()">Upload</button>
+            <button onclick="simulateUpload()">Upload</button>
             <button onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
         </div>
     </div>
@@ -131,50 +131,16 @@
     </div>
 
     <script>
-        // Initialize IndexedDB
-        let db;
-        const request = indexedDB.open('videoDB', 1);
-
-        request.onupgradeneeded = function(event) {
-            db = event.target.result;
-            if (!db.objectStoreNames.contains('videos')) {
-                const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
-                objectStore.createIndex('name', 'name', { unique: false });
-                objectStore.createIndex('title', 'title', { unique: false });
-                objectStore.createIndex('dataURL', 'dataURL', { unique: false });
-            }
-        };
-
-        request.onsuccess = function(event) {
-            db = event.target.result;
-            loadHome();
-        };
-
-        request.onerror = function(event) {
-            console.error('Database error:', event.target.error);
-        };
-
-        function uploadVideo() {
+        // Simulate Upload Functionality
+        function simulateUpload() {
             const videoFile = document.getElementById('videoUpload').files[0];
             const videoTitle = document.getElementById('videoTitle').value;
+            
             if (videoFile && videoTitle) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const dataURL = event.target.result;
-                    const transaction = db.transaction(['videos'], 'readwrite');
-                    const objectStore = transaction.objectStore('videos');
-                    objectStore.put({ name: videoFile.name, title: videoTitle, dataURL: dataURL });
-
-                    transaction.oncomplete = function() {
-                        loadHome();
-                        document.getElementById('uploadModal').style.display = 'none';
-                        document.getElementById('videoUpload').value = '';
-                        document.getElementById('videoTitle').value = '';
-                    };
-
-                    transaction.onerror = function() {
-                        alert('Error uploading video.');
-                    };
+                    displayVideoThumbnail(videoTitle, dataURL);
                 };
                 reader.readAsDataURL(videoFile);
             } else {
@@ -182,63 +148,43 @@
             }
         }
 
-        function loadHome() {
-            const transaction = db.transaction(['videos'], 'readonly');
-            const objectStore = transaction.objectStore('videos');
-            const request = objectStore.getAll();
+        // Display Video Thumbnail Function
+        function displayVideoThumbnail(title, dataURL) {
+            const videoContainer = document.getElementById('videoContainer');
+            const videoElement = document.createElement('div');
+            videoElement.classList.add('video');
 
-            request.onsuccess = function(event) {
-                const videos = event.target.result;
-                const videoContainer = document.getElementById('videoContainer');
-                videoContainer.innerHTML = '';
+            const videoTitle = document.createElement('div');
+            videoTitle.classList.add('video-title');
+            videoTitle.textContent = title;
 
-                videos.forEach(video => {
-                    const videoElement = document.createElement('div');
-                    videoElement.classList.add('video');
-                    
-                    const videoTitle = document.createElement('div');
-                    videoTitle.classList.add('video-title');
-                    videoTitle.textContent = video.title;
-                    
-                    const videoTag = document.createElement('video');
-                    videoTag.controls = true;
-                    const source = document.createElement('source');
-                    source.src = video.dataURL;
-                    source.type = 'video/mp4';
-                    videoTag.appendChild(source);
+            const videoTag = document.createElement('video');
+            videoTag.controls = true;
+            const source = document.createElement('source');
+            source.src = dataURL;
+            source.type = 'video/mp4';
+            videoTag.appendChild(source);
 
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.onclick = function() {
-                        deleteVideo(video.id);
-                    };
-
-                    videoElement.appendChild(videoTag);
-                    videoElement.appendChild(videoTitle);
-                    videoElement.appendChild(deleteButton);
-                    
-                    videoContainer.appendChild(videoElement);
-                });
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = function() {
+                videoContainer.removeChild(videoElement);
             };
+
+            videoElement.appendChild(videoTag);
+            videoElement.appendChild(videoTitle);
+            videoElement.appendChild(deleteButton);
+
+            videoContainer.appendChild(videoElement);
+        }
+
+        // Placeholder Functions for IndexedDB Integration
+        function loadHome() {
+            // Placeholder for loading videos from IndexedDB
         }
 
         function loadHistory() {
-            // Fetch and display history (not implemented in this example)
-            alert("History feature is not implemented yet.");
-        }
-
-        function deleteVideo(id) {
-            const transaction = db.transaction(['videos'], 'readwrite');
-            const objectStore = transaction.objectStore('videos');
-            const request = objectStore.delete(id);
-
-            request.onsuccess = function() {
-                loadHome();
-            };
-
-            request.onerror = function() {
-                alert('Error deleting video.');
-            };
+            // Placeholder for loading history
         }
     </script>
 </body>
