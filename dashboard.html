@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Clone P2P with IndexedDB</title>
+    <title>YouTube Clone</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -76,7 +76,7 @@
 </head>
 <body>
     <header>
-        <div class="logo">YouTube Clone</div>
+        <div class="logo">YouTube</div>
         <div class="search-bar">
             <input type="text" placeholder="Search">
             <button>Search</button>
@@ -112,104 +112,84 @@
     </div>
 
     <script>
-        const dbName = 'videoDB';
+        // Initialize IndexedDB
         let db;
+        const request = indexedDB.open('videoDB', 1);
 
-        function openDatabase() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+            objectStore.createIndex('name', 'name', { unique: false });
+            objectStore.createIndex('dataURL', 'dataURL', { unique: false });
+        };
 
-                request.onupgradeneeded = (event) => {
-                    db = event.target.result;
-                    db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
-                };
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            loadVideos();
+        };
 
-                request.onsuccess = (event) => {
-                    db = event.target.result;
-                    resolve();
-                };
+        request.onerror = function(event) {
+            console.error('Database error:', event.target.error);
+        };
 
-                request.onerror = (event) => {
-                    reject('Error opening database: ' + event.target.errorCode);
-                };
-            });
-        }
-
-        function saveVideoToDB(videoFile) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction(['videos'], 'readwrite');
-                const store = transaction.objectStore('videos');
-                const videoData = {
-                    name: videoFile.name,
-                    blob: videoFile
-                };
-                const request = store.add(videoData);
-
-                request.onsuccess = () => {
-                    resolve();
-                };
-
-                request.onerror = (event) => {
-                    reject('Error saving video: ' + event.target.errorCode);
-                };
-            });
-        }
-
-        function loadVideosFromDB() {
-            const transaction = db.transaction(['videos'], 'readonly');
-            const store = transaction.objectStore('videos');
-            const request = store.getAll();
-
-            request.onsuccess = (event) => {
-                const videos = event.target.result;
-                displayVideos(videos);
-            };
-
-            request.onerror = (event) => {
-                console.error('Error loading videos: ' + event.target.errorCode);
-            };
-        }
-
-        function displayVideos(videos) {
-            const videoContainer = document.getElementById('videoContainer');
-            videoContainer.innerHTML = '';
-
-            videos.forEach(video => {
-                const videoElement = document.createElement('div');
-                videoElement.classList.add('video');
-
-                const videoTitle = document.createElement('div');
-                videoTitle.classList.add('video-title');
-                videoTitle.textContent = video.name;
-
-                const videoTag = document.createElement('video');
-                videoTag.controls = true;
-                const url = URL.createObjectURL(video.blob);
-                videoTag.src = url;
-
-                videoElement.appendChild(videoTag);
-                videoElement.appendChild(videoTitle);
-
-                videoContainer.appendChild(videoElement);
-            });
-        }
-
-        async function uploadVideo() {
+        function uploadVideo() {
             const videoFile = document.getElementById('videoUpload').files[0];
             if (videoFile) {
-                await saveVideoToDB(videoFile);
-                loadVideosFromDB();
-                document.getElementById('uploadModal').style.display = 'none';
-                document.getElementById('videoUpload').value = '';
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataURL = event.target.result;
+                    const transaction = db.transaction(['videos'], 'readwrite');
+                    const objectStore = transaction.objectStore('videos');
+                    const request = objectStore.add({ name: videoFile.name, dataURL: dataURL });
+
+                    request.onsuccess = function() {
+                        loadVideos();
+                        document.getElementById('uploadModal').style.display = 'none';
+                        document.getElementById('videoUpload').value = '';
+                    };
+
+                    request.onerror = function() {
+                        alert('Error uploading video.');
+                    };
+                };
+                reader.readAsDataURL(videoFile);
             } else {
                 alert('Please select a video file to upload.');
             }
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await openDatabase();
-            loadVideosFromDB();
-        });
+        function loadVideos() {
+            const transaction = db.transaction(['videos'], 'readonly');
+            const objectStore = transaction.objectStore('videos');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function(event) {
+                const videos = event.target.result;
+                const videoContainer = document.getElementById('videoContainer');
+                videoContainer.innerHTML = '';
+
+                videos.forEach(video => {
+                    const videoElement = document.createElement('div');
+                    videoElement.classList.add('video');
+                    
+                    const videoTitle = document.createElement('div');
+                    videoTitle.classList.add('video-title');
+                    videoTitle.textContent = video.name;
+                    
+                    const videoTag = document.createElement('video');
+                    videoTag.controls = true;
+                    const source = document.createElement('source');
+                    source.src = video.dataURL;
+                    source.type = 'video/mp4';
+                    videoTag.appendChild(source);
+                    
+                    videoElement.appendChild(videoTag);
+                    videoElement.appendChild(videoTitle);
+                    
+                    videoContainer.appendChild(videoElement);
+                });
+            };
+        }
     </script>
 </body>
 </html>
