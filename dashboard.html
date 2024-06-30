@@ -3,72 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Upload and Display</title>
+    <title>YouTube Clone P2P</title>
     <style>
-        #videoContainer {
-            margin-top: 20px;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #FF0000;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+        }
+        .search-bar input {
+            padding: 5px;
+            font-size: 16px;
+        }
+        .search-bar button {
+            padding: 5px 10px;
+            font-size: 16px;
+            background-color: white;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #f1f1f1;
+            padding: 10px;
+        }
+        nav a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+        .content {
+            display: flex;
+            padding: 20px;
+        }
+        .sidebar {
+            width: 20%;
+            background-color: #f1f1f1;
+            padding: 20px;
+        }
+        .main-content {
+            width: 80%;
+            padding: 20px;
+        }
+        .video {
+            margin-bottom: 20px;
+        }
+        .video video {
+            max-width: 100%;
+            height: auto;
+        }
+        .video-title {
+            font-size: 18px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Upload and Display Videos</h1>
-    <input type="file" id="videoUpload" accept="video/*">
-    <button id="uploadButton">Upload</button>
-    <div id="videoContainer"></div>
+    <header>
+        <div class="logo">YouTube P2P</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search">
+            <button>Search</button>
+        </div>
+        <div class="user-options">
+            <button onclick="document.getElementById('uploadModal').style.display='block'">Upload</button>
+            <button>Sign In</button>
+        </div>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Trending</a>
+        <a href="#">Subscriptions</a>
+        <a href="#">Library</a>
+    </nav>
+    <div class="content">
+        <div class="sidebar">
+            <p>Sidebar content (e.g., links to playlists, subscriptions)</p>
+        </div>
+        <div class="main-content" id="videoContainer">
+            <!-- Uploaded videos will appear here -->
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+        <div style="background:white; padding:20px; border-radius:5px;">
+            <h2>Upload Video</h2>
+            <input type="file" id="videoUpload" accept="video/*">
+            <button onclick="uploadVideo()">Upload</button>
+            <button onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
 
     <script>
-        // Handle video upload and storage in localStorage
-        document.getElementById('uploadButton').addEventListener('click', () => {
-            const fileInput = document.getElementById('videoUpload');
-            const files = fileInput.files;
-            if (files.length > 0) {
-                const file = files[0];
-                const reader = new FileReader();
+        const peerConnections = {};
+        const config = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        };
 
-                reader.onload = (e) => {
-                    const videoURL = e.target.result;
-                    addVideoToStorage(videoURL);
-                    displayVideos();
-                };
+        const signalingServerUrl = 'wss://your-signaling-server-url';
+        const socket = new WebSocket(signalingServerUrl);
 
-                reader.readAsDataURL(file);
+        socket.onmessage = (message) => {
+            const data = JSON.parse(message.data);
+            switch (data.type) {
+                case 'offer':
+                    handleOffer(data.offer, data.from);
+                    break;
+                case 'answer':
+                    handleAnswer(data.answer, data.from);
+                    break;
+                case 'candidate':
+                    handleCandidate(data.candidate, data.from);
+                    break;
             }
-        });
+        };
 
-        function addVideoToStorage(videoURL) {
-            let videos = JSON.parse(localStorage.getItem('videos')) || [];
-            videos.push(videoURL);
-            localStorage.setItem('videos', JSON.stringify(videos));
+        async function createPeerConnection(id) {
+            const pc = new RTCPeerConnection(config);
+            pc.onicecandidate = ({ candidate }) => {
+                if (candidate) {
+                    sendToServer({
+                        type: 'candidate',
+                        candidate: candidate,
+                        to: id
+                    });
+                }
+            };
+            pc.ontrack = (event) => {
+                const videoElement = document.createElement('video');
+                videoElement.srcObject = event.streams[0];
+                videoElement.controls = true;
+                document.getElementById('videoContainer').appendChild(videoElement);
+            };
+            peerConnections[id] = pc;
+            return pc;
         }
 
-        function displayVideos() {
-            const videoContainer = document.getElementById('videoContainer');
-            const videos = JSON.parse(localStorage.getItem('videos')) || [];
-            videoContainer.innerHTML = '';
-            videos.forEach(videoURL => {
+        function sendToServer(message) {
+            socket.send(JSON.stringify(message));
+        }
+
+        async function uploadVideo() {
+            const videoFile = document.getElementById('videoUpload').files[0];
+            if (videoFile) {
                 const videoElement = document.createElement('video');
-                videoElement.width = 320;
-                videoElement.height = 240;
                 videoElement.controls = true;
+                videoElement.src = URL.createObjectURL(videoFile);
+                document.getElementById('videoContainer').appendChild(videoElement);
 
-                const sourceElement = document.createElement('source');
-                sourceElement.src = videoURL;
-                sourceElement.type = 'video/mp4';
+                const peers = Object.keys(peerConnections);
+                peers.forEach(async (peerId) => {
+                    const pc = peerConnections[peerId];
+                    const stream = videoElement.captureStream();
+                    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+                    const offer = await pc.createOffer();
+                    await pc.setLocalDescription(offer);
+                    sendToServer({
+                        type: 'offer',
+                        offer: offer,
+                        to: peerId
+                    });
+                });
+            } else {
+                alert('Please select a video file to upload.');
+            }
+        }
 
-                videoElement.appendChild(sourceElement);
-                videoContainer.appendChild(videoElement);
+        async function handleOffer(offer, from) {
+            const pc = await createPeerConnection(from);
+            await pc.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            sendToServer({
+                type: 'answer',
+                answer: answer,
+                to: from
             });
         }
 
-        // Load videos from localStorage on page load
-        window.onload = () => {
-            displayVideos();
-        };
+        async function handleAnswer(answer, from) {
+            const pc = peerConnections[from];
+            await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        }
 
-        // Clear localStorage on page unload to simulate video disappearing on refresh
-        window.onunload = () => {
-            localStorage.removeItem('videos');
-        };
+        function handleCandidate(candidate, from) {
+            const pc = peerConnections[from];
+            pc.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const username = prompt('Enter your username');
+            sendToServer({ type: 'join', name: username });
+        });
     </script>
 </body>
 </html>
