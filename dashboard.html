@@ -65,7 +65,7 @@
             margin-bottom: 20px;
         }
         .video video {
-            max-width: 100%;
+            width: 100%;
             height: auto;
         }
         .video-title {
@@ -85,7 +85,7 @@
 </head>
 <body>
     <header>
-        <div class="logo">PositiveBip</div>
+        <div class="logo">YouTube</div>
         <div class="search-bar">
             <input type="text" placeholder="Search">
             <button>Search</button>
@@ -96,15 +96,11 @@
         </div>
     </header>
     <nav>
-        <a href="#">Home</a>
+        <a href="#" onclick="loadHome()">Home</a>
         <a href="#">Trending</a>
         <a href="#">Subscriptions</a>
         <a href="#">Library</a>
     </nav>
-    <div class="content">
-        <div class="sidebar">
-            <p>Sidebar content (e.g., links to playlists, subscriptions)</p>
-        </div>
         <div class="main-content" id="videoContainer">
             <!-- Uploaded videos will appear here -->
         </div>
@@ -112,18 +108,18 @@
 
     <!-- Upload Modal -->
     <div id="uploadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
-        <div style="background:white; padding:20px; border-radius:15px;">
+        <div style="background:white; padding:20px; border-radius:5px;">
             <h2>Upload Video</h2>
             <input type="file" id="videoUpload" accept="video/*">
             <button onclick="uploadVideo()">Upload</button>
             <button onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
         </div>
     </div>
-     <div
-    <nav></nav> class="footer">
-        <a href="#">Home</a>
-        <a href="#">History</a>
-   </div>
+
+    <div class="footer">
+        <a href="#" onclick="loadHome()">Home</a>
+        <a href="#" onclick="loadHistory()">History</a>
+    </div>
 
     <script>
         // Initialize IndexedDB
@@ -139,7 +135,7 @@
 
         request.onsuccess = function(event) {
             db = event.target.result;
-            loadVideos();
+            loadHome();
         };
 
         request.onerror = function(event) {
@@ -157,7 +153,7 @@
                     const request = objectStore.add({ name: videoFile.name, dataURL: dataURL });
 
                     request.onsuccess = function() {
-                        loadVideos();
+                        loadHome();
                         document.getElementById('uploadModal').style.display = 'none';
                         document.getElementById('videoUpload').value = '';
                     };
@@ -172,7 +168,7 @@
             }
         }
 
-        function loadVideos() {
+        function loadHome() {
             const transaction = db.transaction(['videos'], 'readonly');
             const objectStore = transaction.objectStore('videos');
             const request = objectStore.getAll();
@@ -212,13 +208,18 @@
             };
         }
 
+        function loadHistory() {
+            // Fetch and display history
+            alert("History feature is not implemented yet.");
+        }
+
         function deleteVideo(id) {
             const transaction = db.transaction(['videos'], 'readwrite');
             const objectStore = transaction.objectStore('videos');
             const request = objectStore.delete(id);
 
             request.onsuccess = function() {
-                loadVideos();
+                loadHome();
             };
 
             request.onerror = function() {
