@@ -9,7 +9,16 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+            background-size: 1400% 1400%;
+            animation: rainbow 15s ease infinite;
         }
+
+        @keyframes rainbow {
+            0%, 100% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+        }
+
         header {
             background-color: #FF0000;
             color: white;
@@ -101,9 +110,8 @@
         <a href="#">Subscriptions</a>
         <a href="#">Library</a>
     </nav>
-        <div class="main-content" id="videoContainer">
-            <!-- Uploaded videos will appear here -->
-        </div>
+    <div class="main-content" id="videoContainer">
+        <!-- Uploaded videos will appear here -->
     </div>
 
     <!-- Upload Modal -->
@@ -111,6 +119,7 @@
         <div style="background:white; padding:20px; border-radius:5px;">
             <h2>Upload Video</h2>
             <input type="file" id="videoUpload" accept="video/*">
+            <input type="text" id="videoTitle" placeholder="Video Title">
             <button onclick="uploadVideo()">Upload</button>
             <button onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
         </div>
@@ -130,6 +139,7 @@
             db = event.target.result;
             const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
             objectStore.createIndex('name', 'name', { unique: false });
+            objectStore.createIndex('title', 'title', { unique: false });
             objectStore.createIndex('dataURL', 'dataURL', { unique: false });
         };
 
@@ -144,18 +154,20 @@
 
         function uploadVideo() {
             const videoFile = document.getElementById('videoUpload').files[0];
-            if (videoFile) {
+            const videoTitle = document.getElementById('videoTitle').value;
+            if (videoFile && videoTitle) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const dataURL = event.target.result;
                     const transaction = db.transaction(['videos'], 'readwrite');
                     const objectStore = transaction.objectStore('videos');
-                    const request = objectStore.add({ name: videoFile.name, dataURL: dataURL });
+                    const request = objectStore.add({ name: videoFile.name, title: videoTitle, dataURL: dataURL });
 
                     request.onsuccess = function() {
                         loadHome();
                         document.getElementById('uploadModal').style.display = 'none';
                         document.getElementById('videoUpload').value = '';
+                        document.getElementById('videoTitle').value = '';
                     };
 
                     request.onerror = function() {
@@ -164,7 +176,7 @@
                 };
                 reader.readAsDataURL(videoFile);
             } else {
-                alert('Please select a video file to upload.');
+                alert('Please select a video file and enter a title.');
             }
         }
 
@@ -184,7 +196,7 @@
                     
                     const videoTitle = document.createElement('div');
                     videoTitle.classList.add('video-title');
-                    videoTitle.textContent = video.name;
+                    videoTitle.textContent = video.title;
                     
                     const videoTag = document.createElement('video');
                     videoTag.controls = true;
