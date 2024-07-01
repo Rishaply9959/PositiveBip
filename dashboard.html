@@ -57,17 +57,7 @@
             color: black;
             font-weight: bold;
         }
-        .content {
-            display: flex;
-            padding: 20px;
-        }
-        .sidebar {
-            width: 20%;
-            background-color: #f1f1f1;
-            padding: 20px;
-        }
         .main-content {
-            width: 80%;
             padding: 20px;
         }
         .video {
@@ -80,6 +70,7 @@
         .video-title {
             font-size: 18px;
             font-weight: bold;
+            margin-bottom: 5px;
         }
         .footer {
             display: flex;
@@ -121,7 +112,7 @@
             <input type="file" id="videoUpload" accept="video/*">
             <input type="text" id="videoTitle" placeholder="Video Title">
             <button onclick="uploadVideo()">Upload</button>
-            <button onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
+            <button onclick="closeUploadModal()">Cancel</button>
         </div>
     </div>
 
@@ -137,10 +128,10 @@
 
         request.onupgradeneeded = function(event) {
             db = event.target.result;
-            const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
-            objectStore.createIndex('name', 'name', { unique: false });
-            objectStore.createIndex('title', 'title', { unique: false });
-            objectStore.createIndex('dataURL', 'dataURL', { unique: false });
+            if (!db.objectStoreNames.contains('videos')) {
+                const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('title', 'title', { unique: false });
+            }
         };
 
         request.onsuccess = function(event) {
@@ -159,25 +150,27 @@
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const dataURL = event.target.result;
-                    const transaction = db.transaction(['videos'], 'readwrite');
-                    const objectStore = transaction.objectStore('videos');
-                    const request = objectStore.add({ name: videoFile.name, title: videoTitle, dataURL: dataURL });
-
-                    request.onsuccess = function() {
-                        loadHome();
-                        document.getElementById('uploadModal').style.display = 'none';
-                        document.getElementById('videoUpload').value = '';
-                        document.getElementById('videoTitle').value = '';
-                    };
-
-                    request.onerror = function() {
-                        alert('Error uploading video.');
-                    };
+                    saveVideoData(videoFile.name, videoTitle, dataURL);
                 };
                 reader.readAsDataURL(videoFile);
             } else {
                 alert('Please select a video file and enter a title.');
             }
+        }
+
+        function saveVideoData(name, title, dataURL) {
+            const transaction = db.transaction(['videos'], 'readwrite');
+            const objectStore = transaction.objectStore('videos');
+            const request = objectStore.add({ title: title, dataURL: dataURL });
+
+            request.onsuccess = function() {
+                loadHome();
+                closeUploadModal();
+            };
+
+            request.onerror = function() {
+                alert('Error uploading video.');
+            };
         }
 
         function loadHome() {
@@ -200,10 +193,8 @@
                     
                     const videoTag = document.createElement('video');
                     videoTag.controls = true;
-                    const source = document.createElement('source');
-                    source.src = video.dataURL;
-                    source.type = 'video/mp4';
-                    videoTag.appendChild(source);
+                    videoTag.src = video.dataURL;
+                    videoTag.type = 'video/mp4';
 
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'Delete';
@@ -221,7 +212,7 @@
         }
 
         function loadHistory() {
-            // Fetch and display history
+            // Fetch and display history (future feature implementation)
             alert("History feature is not implemented yet.");
         }
 
@@ -237,6 +228,12 @@
             request.onerror = function() {
                 alert('Error deleting video.');
             };
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('videoUpload').value = '';
+            document.getElementById('videoTitle').value = '';
         }
     </script>
 </body>
