@@ -118,10 +118,36 @@
             justify-content: center;
             align-items: center;
         }
-        #uploadModal div {
+        #uploadModal .modal-content {
             background: white;
             padding: 20px;
             border-radius: 5px;
+            width: 50%;
+        }
+        #uploadModal .modal-content h2 {
+            margin-top: 0;
+        }
+        #uploadModal .modal-content label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #uploadModal .modal-content input, 
+        #uploadModal .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #uploadModal .modal-content button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #FFD700;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -150,11 +176,17 @@
 
     <!-- Upload Modal -->
     <div id="uploadModal">
-        <div>
+        <div class="modal-content">
             <h2>Upload Video</h2>
-            <input type="file" id="videoUpload" accept="video/*">
+            <label for="videoTitle">Title:</label>
             <input type="text" id="videoTitle" placeholder="Video Title">
-            <button onclick="uploadVideo()">Upload</button>
+            <label for="videoDescription">Description:</label>
+            <textarea id="videoDescription" rows="4" placeholder="Video Description"></textarea>
+            <label for="videoUsername">Username:</label>
+            <input type="text" id="videoUsername" placeholder="Your Username">
+            <label for="videoUpload">Choose file:</label>
+            <input type="file" id="videoUpload" accept="video/*">
+            <button onclick="uploadVideo()">Upload Video</button>
             <button onclick="closeUploadModal()">Cancel</button>
         </div>
     </div>
@@ -184,6 +216,8 @@
             if (!db.objectStoreNames.contains('videos')) {
                 const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
                 objectStore.createIndex('title', 'title', { unique: false });
+                objectStore.createIndex('description', 'description', { unique: false });
+                objectStore.createIndex('username', 'username', { unique: false });
             }
         };
 
@@ -199,22 +233,25 @@
         function uploadVideo() {
             const videoFile = document.getElementById('videoUpload').files[0];
             const videoTitle = document.getElementById('videoTitle').value;
-            if (videoFile && videoTitle) {
+            const videoDescription = document.getElementById('videoDescription').value;
+            const videoUsername = document.getElementById('videoUsername').value;
+
+            if (videoFile && videoTitle && videoDescription && videoUsername) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const dataURL = event.target.result;
-                    saveVideoData(videoFile.name, videoTitle, dataURL);
+                    saveVideoData(videoFile.name, videoTitle, videoDescription, videoUsername, dataURL);
                 };
                 reader.readAsDataURL(videoFile);
             } else {
-                alert('Please select a video file and enter a title.');
+                alert('Please fill out all fields and select a video file.');
             }
         }
 
-        function saveVideoData(name, title, dataURL) {
+        function saveVideoData(name, title, description, username, dataURL) {
             const transaction = db.transaction(['videos'], 'readwrite');
             const objectStore = transaction.objectStore('videos');
-            const request = objectStore.add({ title: title, dataURL: dataURL });
+            const request = objectStore.add({ title: title, description: description, username: username, dataURL: dataURL });
 
             request.onsuccess = function() {
                 loadHome();
@@ -253,8 +290,16 @@
                     videoTag.src = video.dataURL;
                     videoTag.type = 'video/mp4';
 
+                    const videoDescription = document.createElement('p');
+                    videoDescription.textContent = video.description;
+
+                    const videoUsername = document.createElement('p');
+                    videoUsername.textContent = `Uploaded by: ${video.username}`;
+
                     videoElement.appendChild(videoTag);
                     videoElement.appendChild(videoTitle);
+                    videoElement.appendChild(videoDescription);
+                    videoElement.appendChild(videoUsername);
                     
                     videoContainer.appendChild(videoElement);
                 });
@@ -267,9 +312,12 @@
 
         function closeUploadModal() {
             document.getElementById('uploadModal').style.display = 'none';
-            document.getElementById('videoUpload').value = '';
             document.getElementById('videoTitle').value = '';
+            document.getElementById('videoDescription').value = '';
+            document.getElementById('videoUsername').value = '';
+            document.getElementById('videoUpload').value = '';
         }
     </script>
 </body>
-</html>
+    </html>
+    
