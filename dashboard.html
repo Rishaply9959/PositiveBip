@@ -3,25 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Clone</title>
+    <title>RISHAPLY</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-            background-size: 1400% 1400%;
-            animation: rainbow 15s ease infinite;
-        }
-
-        @keyframes rainbow {
-            0%, 100% {background-position: 0% 50%;}
-            50% {background-position: 100% 50%;}
+            background: url('path/to/your/background-image.jpg') no-repeat center center fixed;
+            background-size: cover;
         }
 
         header {
-            background-color: #FF0000;
-            color: white;
+            background-color: #000000;
+            color: #FFD700;
             padding: 10px 20px;
             display: flex;
             align-items: center;
@@ -30,31 +24,50 @@
         .logo {
             font-size: 24px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            height: 30px;
+            margin-right: 10px;
         }
         .search-bar {
             display: flex;
             align-items: center;
+            background-color: #FFD700;
+            padding: 5px;
+            border-radius: 5px;
         }
         .search-bar input {
             padding: 5px;
             font-size: 16px;
+            border: none;
+            outline: none;
         }
         .search-bar button {
             padding: 5px 10px;
             font-size: 16px;
-            background-color: white;
-            border: 1px solid #ccc;
+            background-color: #FFD700;
+            border: none;
             cursor: pointer;
+        }
+        .user-options button {
+            background-color: #FFD700;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
         }
         nav {
             display: flex;
             justify-content: space-around;
-            background-color: #f1f1f1;
+            background-color: #FFD700;
             padding: 10px;
         }
         nav a {
             text-decoration: none;
-            color: black;
+            color: #000000;
             font-weight: bold;
         }
         .main-content {
@@ -74,40 +87,70 @@
         }
         .footer {
             display: flex;
-            justify-content: space-between;
-            background-color: #f1f1f1;
+            justify-content: space-around;
+            background-color: #FFD700;
             padding: 10px 20px;
             position: fixed;
             bottom: 0;
             width: 100%;
         }
+        .footer a {
+            text-decoration: none;
+            color: #000000;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .footer img {
+            height: 24px;
+            margin-right: 5px;
+        }
+
+        /* Upload Modal */
+        #uploadModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #uploadModal div {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">YouTube</div>
+        <div class="logo">
+            <img src="path/to/your/background-logo.png" alt="Logo">
+            RP
+        </div>
         <div class="search-bar">
             <input type="text" placeholder="Search">
             <button>Search</button>
         </div>
         <div class="user-options">
-            <button onclick="document.getElementById('uploadModal').style.display='block'">Upload</button>
-            <button>Sign In</button>
+            <button onclick="document.getElementById('uploadModal').style.display='flex'">Upload</button>
         </div>
     </header>
     <nav>
         <a href="#" onclick="loadHome()">Home</a>
-        <a href="#">Trending</a>
-        <a href="#">Subscriptions</a>
-        <a href="#">Library</a>
+        <a href="#" onclick="loadVideos()">Videos</a>
+        <a href="#" onclick="loadHistory()">History</a>
     </nav>
     <div class="main-content" id="videoContainer">
         <!-- Uploaded videos will appear here -->
     </div>
 
     <!-- Upload Modal -->
-    <div id="uploadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
-        <div style="background:white; padding:20px; border-radius:5px;">
+    <div id="uploadModal">
+        <div>
             <h2>Upload Video</h2>
             <input type="file" id="videoUpload" accept="video/*">
             <input type="text" id="videoTitle" placeholder="Video Title">
@@ -117,8 +160,18 @@
     </div>
 
     <div class="footer">
-        <a href="#" onclick="loadHome()">Home</a>
-        <a href="#" onclick="loadHistory()">History</a>
+        <a href="#" onclick="loadHome()">
+            <img src="path/to/home-icon.png" alt="Home">
+            Home
+        </a>
+        <a href="#" onclick="loadVideos()">
+            <img src="path/to/shorts-icon.png" alt="Videos">
+            Videos
+        </a>
+        <a href="#" onclick="loadHistory()">
+            <img src="path/to/history-icon.png" alt="History">
+            History
+        </a>
     </div>
 
     <script>
@@ -174,6 +227,10 @@
         }
 
         function loadHome() {
+            // Code for loading home content
+        }
+
+        function loadVideos() {
             const transaction = db.transaction(['videos'], 'readonly');
             const objectStore = transaction.objectStore('videos');
             const request = objectStore.getAll();
@@ -196,15 +253,8 @@
                     videoTag.src = video.dataURL;
                     videoTag.type = 'video/mp4';
 
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.onclick = function() {
-                        deleteVideo(video.id);
-                    };
-
                     videoElement.appendChild(videoTag);
                     videoElement.appendChild(videoTitle);
-                    videoElement.appendChild(deleteButton);
                     
                     videoContainer.appendChild(videoElement);
                 });
@@ -212,22 +262,7 @@
         }
 
         function loadHistory() {
-            // Fetch and display history (future feature implementation)
             alert("History feature is not implemented yet.");
-        }
-
-        function deleteVideo(id) {
-            const transaction = db.transaction(['videos'], 'readwrite');
-            const objectStore = transaction.objectStore('videos');
-            const request = objectStore.delete(id);
-
-            request.onsuccess = function() {
-                loadHome();
-            };
-
-            request.onerror = function() {
-                alert('Error deleting video.');
-            };
         }
 
         function closeUploadModal() {
