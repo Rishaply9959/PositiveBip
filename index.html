@@ -109,18 +109,49 @@
         .overlay.active {
             display: block;
         }
+
+        .menu-content {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            z-index: 15;
+        }
+
+        .menu-content a {
+            display: block;
+            color: #333;
+            text-decoration: none;
+            padding: 10px;
+            transition: background 0.3s;
+        }
+
+        .menu-content a:hover {
+            background: #f0f0f0;
+        }
+
+        .menu-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <header>
         <span class="title">Welcome to PositiveBip</span>
-        <span class="menu-icon" onclick="openDialog()">&#9776;</span>
+        <span class="menu-icon" onclick="toggleMenu()">&#9776;</span>
     </header>
     
     <div class="overlay" id="overlay" onclick="closeDialog()"></div>
     <div class="dialog" id="dialog">
         <span class="dialog-close" onclick="closeDialog()">&times;</span>
         <button onclick="goToVideos()">Click to go</button>
+    </div>
+
+    <div class="menu-content" id="menuContent">
+        <a href="#" onclick="openSignUpDialog()">Sign Up</a>
     </div>
 
     <main>
@@ -134,12 +165,27 @@
 
     <footer>
         <img src="stop-button-icon.png" alt="Stop Button" class="control-button" onclick="stopAudio()">
-        <img src="play-button-icon.png" alt="Play Button" class="control-button" onclick="playAudio()">
+        <img src="play-button-icon.png" alt="Play Button" class="control-button" onclick="checkSignUp()">
     </footer>
 
     <audio id="backgroundAudio" src="Woods-audio.mp3"></audio>
 
+    <div class="dialog" id="signUpDialog">
+        <span class="dialog-close" onclick="closeSignUpDialog()">&times;</span>
+        <h2>Sign Up</h2>
+        <input type="text" id="username" placeholder="Username"><br><br>
+        <input type="password" id="password" placeholder="Password"><br><br>
+        <button onclick="signUp()">Sign Up</button>
+    </div>
+
     <script>
+        let signedUp = false;
+
+        function toggleMenu() {
+            const menuContent = document.getElementById('menuContent');
+            menuContent.classList.toggle('active');
+        }
+
         function openDialog() {
             document.getElementById('dialog').classList.add('active');
             document.getElementById('overlay').classList.add('active');
@@ -155,20 +201,47 @@
         }
 
         function playAudio() {
-            var audio = document.getElementById('backgroundAudio');
+            const audio = document.getElementById('backgroundAudio');
             audio.play();
         }
 
         function stopAudio() {
-            var audio = document.getElementById('backgroundAudio');
+            const audio = document.getElementById('backgroundAudio');
             audio.pause();
             audio.currentTime = 0; // Reset the audio to the beginning
         }
 
-        window.onload = function() {
-            // Assuming there's no login check needed anymore
+        function openSignUpDialog() {
+            document.getElementById('signUpDialog').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function closeSignUpDialog() {
+            document.getElementById('signUpDialog').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function signUp() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username && password) {
+                signedUp = true;
+                closeSignUpDialog();
+                alert('Sign up successful!');
+            } else {
+                alert('Please enter a username and password.');
+            }
+        }
+
+        function checkSignUp() {
+            if (signedUp) {
+                goToVideos();
+            } else {
+                alert('Please sign up first.');
+                openSignUpDialog();
+            }
         }
     </script>
 </body>
-  </html>
-  
+</html>
