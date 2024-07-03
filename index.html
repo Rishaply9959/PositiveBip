@@ -152,6 +152,7 @@
 
     <div class="menu-content" id="menuContent">
         <a href="#" onclick="openSignUpDialog()">Sign Up</a>
+        <a href="#" onclick="openLoginDialog()">Login</a>
     </div>
 
     <main>
@@ -173,13 +174,22 @@
     <div class="dialog" id="signUpDialog">
         <span class="dialog-close" onclick="closeSignUpDialog()">&times;</span>
         <h2>Sign Up</h2>
-        <input type="text" id="username" placeholder="Username"><br><br>
-        <input type="password" id="password" placeholder="Password"><br><br>
+        <input type="text" id="signUpUsername" placeholder="Username"><br><br>
+        <input type="password" id="signUpPassword" placeholder="Password"><br><br>
+        <input type="email" id="signUpEmail" placeholder="Email"><br><br>
         <button onclick="signUp()">Sign Up</button>
     </div>
 
+    <div class="dialog" id="loginDialog">
+        <span class="dialog-close" onclick="closeLoginDialog()">&times;</span>
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username"><br><br>
+        <input type="password" id="loginPassword" placeholder="Password"><br><br>
+        <button onclick="login()">Login</button>
+    </div>
+
     <script>
-        let signedUp = false;
+        let signedUpUser = null;
 
         function toggleMenu() {
             const menuContent = document.getElementById('menuContent');
@@ -221,26 +231,57 @@
             document.getElementById('overlay').classList.remove('active');
         }
 
-        function signUp() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+        function openLoginDialog() {
+            document.getElementById('loginDialog').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+        }
 
-            if (username && password) {
-                signedUp = true;
+        function closeLoginDialog() {
+            document.getElementById('loginDialog').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function signUp() {
+            const username = document.getElementById('signUpUsername').value;
+            const password = document.getElementById('signUpPassword').value;
+            const email = document.getElementById('signUpEmail').value;
+
+            if (username && password && email) {
+                signedUpUser = { username, password, email };
+                localStorage.setItem('signedUpUser', JSON.stringify(signedUpUser));
                 closeSignUpDialog();
                 alert('Sign up successful!');
             } else {
-                alert('Please enter a username and password.');
+                alert('Please fill out all fields.');
+            }
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const savedUser = JSON.parse(localStorage.getItem('signedUpUser'));
+
+            if (savedUser && username === savedUser.username && password === savedUser.password) {
+                closeLoginDialog();
+                alert('Login successful!');
+                goToVideos();
+            } else {
+                alert('Invalid username or password.');
             }
         }
 
         function checkSignUp() {
-            if (signedUp) {
+            if (localStorage.getItem('signedUpUser')) {
                 goToVideos();
             } else {
                 alert('Please sign up first.');
                 openSignUpDialog();
             }
+        }
+
+        window.onload = function() {
+            signedUpUser = JSON.parse(localStorage.getItem('signedUpUser'));
         }
     </script>
 </body>
