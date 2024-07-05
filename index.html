@@ -7,32 +7,31 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: yellow;
+            background: linear-gradient(to right, violet, indigo, blue, green, yellow, orange, red);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             height: 100vh;
             margin: 0;
+            overflow: hidden; /* Hide overflow to prevent scrolling */
         }
 
         header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end; /* Right-align the title */
             align-items: center;
             padding: 20px;
-            background-color: #4caf50;
+            background-color: transparent; /* Remove background color */
+            color: darkblue; /* Dark blue text color */
+            font-style: italic; /* Italic text */
+            font-weight: bold; /* Bold text */
         }
 
         .menu-icon {
             cursor: pointer;
             font-size: 30px;
             color: #fff;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: yellow;
+            margin-left: 20px; /* Add margin for spacing */
         }
 
         main {
@@ -47,15 +46,7 @@
         }
 
         footer {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-        }
-
-        .control-button {
-            width: 50px;
-            height: 50px;
-            cursor: pointer;
+            display: none; /* Remove the footer */
         }
 
         .dialog {
@@ -164,11 +155,6 @@
         </div>
     </main>
 
-    <footer>
-        <img src="stop-button-icon.png" alt="Stop Button" class="control-button" onclick="stopAudio()">
-        <img src="play-button-icon.png" alt="Play Button" class="control-button" onclick="checkSignUp()">
-    </footer>
-
     <audio id="backgroundAudio" src="Woods-audio.mp3"></audio>
 
     <div class="dialog" id="signUpDialog">
@@ -183,7 +169,7 @@
     <div class="dialog" id="loginDialog">
         <span class="dialog-close" onclick="closeLoginDialog()">&times;</span>
         <h2>Login</h2>
-        <input type="text" id="loginUsername" placeholder="Username"><br><br>
+        <input type="email" id="loginEmail" placeholder="Email"><br><br>
         <input type="password" id="loginPassword" placeholder="Password"><br><br>
         <button onclick="login()">Login</button>
     </div>
@@ -257,23 +243,23 @@
         }
 
         function login() {
-            const username = document.getElementById('loginUsername').value;
+            const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
             const savedUser = JSON.parse(localStorage.getItem('signedUpUser'));
 
-            if (savedUser && username === savedUser.username && password === savedUser.password) {
+            if (savedUser && email === savedUser.email && password === savedUser.password) {
                 closeLoginDialog();
                 alert('Login successful!');
                 goToVideos();
             } else {
-                alert('Invalid username or password.');
+                alert('Invalid email or password.');
             }
         }
 
         function checkSignUp() {
             if (localStorage.getItem('signedUpUser')) {
-                goToVideos();
+                openLoginDialog();
             } else {
                 alert('Please sign up first.');
                 openSignUpDialog();
@@ -282,6 +268,9 @@
 
         window.onload = function() {
             signedUpUser = JSON.parse(localStorage.getItem('signedUpUser'));
+            if (signedUpUser) {
+                openLoginDialog();
+            }
         }
     </script>
 </body>
