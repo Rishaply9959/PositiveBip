@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, violet, indigo, blue, green, yellow, orange, red);
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -18,15 +18,26 @@
 
         header {
             display: flex;
-            justify-content: flex-end; /* Right-align the title */
+            justify-content: space-between; /* Center the title */
             align-items: center;
             padding: 20px;
             background-color: transparent; /* Remove background color */
             color: darkblue; /* Dark blue text color */
-            font-style: italic; /* Italic text */
-            font-weight: bold; /* Bold text */
         }
 
+     .title {
+            font-style: italic;
+            font-weight: bold; /* Bold text */
+            text-align: center;
+            width: 100%; /* Center align */
+            text-decoration: underline; /* Underlined text */
+            font-size: 24px; /* Larger font size */
+            color: RED; /* Red text color */
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: .15em solid ;
+            animation: typing 12s steps(300, end) 0s infinite, blink-caret .75s step-end infinite;
+        }
         .menu-icon {
             cursor: pointer;
             font-size: 30px;
@@ -46,7 +57,17 @@
         }
 
         footer {
-            display: none; /* Remove the footer */
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 20px;
+            background-color: transparent;
+        }
+
+        .play-button-icon {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
         }
 
         .dialog {
@@ -127,6 +148,17 @@
         .menu-content.active {
             display: block;
         }
+
+        @keyframes typing {
+            0% { width: 0; }
+            95% { width: 100%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: red; }
+        }
     </style>
 </head>
 <body>
@@ -154,6 +186,10 @@
             </video>
         </div>
     </main>
+
+    <footer>
+        <img src="playbutton-icon.png" class="play-button-icon" onclick="goToVideos()">
+    </footer>
 
     <audio id="backgroundAudio" src="Woods-audio.mp3"></audio>
 
