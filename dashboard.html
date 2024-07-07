@@ -1,1 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISHAPLY</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('background-image.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
 
+        header {
+            background-color: #000000;
+            color: #FFD700;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            height: 30px;
+            margin-right: 10px;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #FFD700;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .search-bar input {
+            padding: 5px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+        }
+        .search-bar button {
+            padding: 5px 10px;
+            font-size: 16px;
+            background-color: #FFD700;
+            border: none;
+            cursor: pointer;
+        }
+        .user-options button {
+            background-color: #FFD700;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #FFD700;
+            padding: 10px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #000000;
+            font-weight: bold;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .video {
+            margin-bottom: 20px;
+        }
+        .video video {
+            width: 100%;
+            height: auto;
+        }
+        .video-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-around;
+            background-color: #FFD700;
+            padding: 10px 20px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .footer a {
+            text-decoration: none;
+            color: #000000;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .footer img {
+            height: 24px;
+            margin-right: 5px;
+        }
+
+        /* Upload Modal */
+        #uploadModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #uploadModal .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 50%;
+        }
+        #uploadModal .modal-content h2 {
+            margin-top: 0;
+        }
+        #uploadModal .modal-content label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #uploadModal .modal-content input, 
+        #uploadModal .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #uploadModal .modal-content button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #FFD700;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="Rishaply-icon.png" alt="Logo">
+            RISHAPLY
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search">
+            <button>Search</button>
+        </div>
+        <div class="user-options">
+            <button onclick="document.getElementById('uploadModal').style.display='flex'">Upload</button>
+        </div>
+    </header>
+    <div class="main-content" id="videoContainer">
+        <!-- Uploaded videos will appear here -->
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal">
+        <div class="modal-content">
+            <h2>Upload Video</h2>
+            <label for="videoTitle">Title:</label>
+            <input type="text" id="videoTitle" placeholder="Video Title">
+            <label for="videoDescription">Description:</label>
+            <textarea id="videoDescription" rows="4" placeholder="Video Description"></textarea>
+            <label for="videoUsername">Username:</label>
+            <input type="text" id="videoUsername" placeholder="Your Username">
+            <label for="videoUpload">Choose file:</label>
+            <input type="file" id="videoUpload" accept="video/*">
+            <button onclick="uploadVideo()">Upload Video</button>
+            <button onclick="closeUploadModal()">Cancel</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="#" onclick="loadHome()">
+            <img src="home-icon.png" alt="Home">
+            Home
+        </a>
+        <a href="#" onclick="loadVideos()">
+            <img src="shorts-icon.png" alt="Videos">
+            Videos
+        </a>
+        <a href="#" onclick="loadHistory()">
+            <img src="history-icon.png" alt="History">
+            History
+        </a>
+    </div>
+
+    <script>
+        const serverUrl = 'http://100.93.86.68:8080';  // Replace with your actual server URL
+
+        function uploadVideo() {
+            const videoFile = document.getElementById('videoUpload').files[0];
+            const videoTitle = document.getElementById('videoTitle').value;
+            const videoDescription = document.getElementById('videoDescription').value;
+            const videoUsername = document.getElementById('videoUsername').value;
+
+            if (videoFile && videoTitle && videoDescription && videoUsername) {
+                const formData = new FormData();
+                formData.append('videoUpload', videoFile);
+                formData.append('title', videoTitle);
+                formData.append('description', videoDescription);
+                formData.append('username', videoUsername);
+
+                fetch(`${serverUrl}/upload`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        loadVideos();
+                        closeUploadModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error uploading video:', error);
+                    alert('Error uploading video.');
+                });
+            } else {
+                alert('Please fill out all fields and select a video file.');
+            }
+        }
+
+        function loadVideos() {
+            fetch(`${serverUrl}/videos`)
+                .then(response => response.json())
+                .then(videos => {
+                    const videoContainer = document.getElementById('videoContainer');
+                    videoContainer.innerHTML = '';
+
+                    videos.forEach(video => {
+                        const videoElement = document.createElement('div');
+                        videoElement.classList.add('video');
+                        
+                        const videoTitle = document.createElement('div');
+                        videoTitle.classList.add('video-title');
+                        videoTitle.textContent = video.title;
+                        
+                        const videoTag = document.createElement('video');
+                        videoTag.controls = true;
+                        videoTag.src = `${serverUrl}/${video.videoPath}`;
+                        videoTag.type = 'video/mp4';
+
+                        const videoDescription = document.createElement('p');
+                        videoDescription.textContent = video.description;
+
+                        const videoUsername = document.createElement('p');
+                        videoUsername.textContent = `Uploaded by: ${video.username}`;
+
+                        videoElement.appendChild(videoTag);
+                        videoElement.appendChild(videoTitle);
+                        videoElement.appendChild(videoDescription);
+                        videoElement.appendChild(videoUsername);
+                        
+                        videoContainer.appendChild(videoElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching videos:', error);
+                });
+        }
+
+        function loadHome() {
+            // Code for loading home content
+        }
+
+        function loadHistory() {
+            alert("History feature is not implemented yet.");
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('videoTitle').value = '';
+            document.getElementById('videoDescription').value = '';
+            document.getElementById('videoUsername').value = '';
+            document.getElementById('videoUpload').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadVideos);
+    </script>
+</body>
+      </html>
+          
