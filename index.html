@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            background: linear-gradient(120deg, yellow, indigo, green);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -25,20 +25,19 @@
             color: darkblue; /* Dark blue text color */
         }
 
-        .title {
+     .title {
             font-style: italic;
             font-weight: bold; /* Bold text */
             text-align: center;
             width: 100%; /* Center align */
             text-decoration: underline; /* Underlined text */
             font-size: 24px; /* Larger font size */
-            color: red; /* Red text color */
+            color: RED; /* Red text color */
             white-space: nowrap;
             overflow: hidden;
-            border-right: .15em solid red;
-            animation: typing 12s steps(30, end) 0s infinite, blink-caret .75s step-end infinite;
+            border-right: .15em solid ;
+            animation: typing 10s steps(300, end) 0s infinite, blink-caret .75s step-end infinite;
         }
-
         .menu-icon {
             cursor: pointer;
             font-size: 30px;
@@ -164,26 +163,14 @@
 </head>
 <body>
     <header>
-        <span class="title">Welcome to PositiveBip</span>
+        <span class="title">WELCOME TO POSITIVEBIP</span>
         <span class="menu-icon" onclick="toggleMenu()">&#9776;</span>
     </header>
     
     <div class="overlay" id="overlay" onclick="closeDialog()"></div>
-    <div class="dialog" id="signUpDialog">
-        <span class="dialog-close" onclick="closeSignUpDialog()">&times;</span>
-        <h2>Sign Up</h2>
-        <input type="text" id="signUpUsername" placeholder="Username"><br><br>
-        <input type="password" id="signUpPassword" placeholder="Password"><br><br>
-        <input type="email" id="signUpEmail" placeholder="Email"><br><br>
-        <button onclick="signUp()">Sign Up</button>
-    </div>
-
-    <div class="dialog" id="loginDialog">
-        <span class="dialog-close" onclick="closeLoginDialog()">&times;</span>
-        <h2>Login</h2>
-        <input type="email" id="loginEmail" placeholder="Email"><br><br>
-        <input type="password" id="loginPassword" placeholder="Password"><br><br>
-        <button onclick="login()">Login</button>
+    <div class="dialog" id="dialog">
+        <span class="dialog-close" onclick="closeDialog()">&times;</span>
+        <button onclick="goToVideos()">Click to go</button>
     </div>
 
     <div class="menu-content" id="menuContent">
@@ -201,10 +188,27 @@
     </main>
 
     <footer>
-        <img src="play-button-icon.png" class="play-button-icon" onclick="checkSignUp()">
+        <img src="playbutton-icon.png" class="play-button-icon" onclick="goToVideos()">
     </footer>
 
     <audio id="backgroundAudio" src="Woods-audio.mp3"></audio>
+
+    <div class="dialog" id="signUpDialog">
+        <span class="dialog-close" onclick="closeSignUpDialog()">&times;</span>
+        <h2>Sign Up</h2>
+        <input type="text" id="signUpUsername" placeholder="Username"><br><br>
+        <input type="password" id="signUpPassword" placeholder="Password"><br><br>
+        <input type="email" id="signUpEmail" placeholder="Email"><br><br>
+        <button onclick="signUp()">Sign Up</button>
+    </div>
+
+    <div class="dialog" id="loginDialog">
+        <span class="dialog-close" onclick="closeLoginDialog()">&times;</span>
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email"><br><br>
+        <input type="password" id="loginPassword" placeholder="Password"><br><br>
+        <button onclick="login()">Login</button>
+    </div>
 
     <script>
         let signedUpUser = null;
@@ -222,6 +226,10 @@
         function closeDialog() {
             document.getElementById('dialog').classList.remove('active');
             document.getElementById('overlay').classList.remove('active');
+        }
+
+        function goToVideos() {
+            window.location.href = 'dashboard.html';
         }
 
         function playAudio() {
@@ -264,9 +272,9 @@
                 signedUpUser = { username, password, email };
                 localStorage.setItem('signedUpUser', JSON.stringify(signedUpUser));
                 closeSignUpDialog();
-                alert('Sign up successful!');
+                alert('Signed up successful!');
             } else {
-                alert('Please fill out all fields.');
+                alert('please enter enter the correct email and password');
             }
         }
 
@@ -279,7 +287,7 @@
             if (savedUser && email === savedUser.email && password === savedUser.password) {
                 closeLoginDialog();
                 alert('Login successful!');
-                window.location.href = 'dashboard.html';
+                goToVideos();
             } else {
                 alert('Invalid email or password.');
             }
@@ -299,36 +307,6 @@
             if (signedUpUser) {
                 openLoginDialog();
             }
-        }
-
-        // Text animation loop
-        const title = document.querySelector('.title');
-        const text = 'Welcome to PositiveBip';
-        let index = 0;
-
-        function typeEffect() {
-            title.textContent += text[index];
-            index++;
-            if (index === text.length) {
-                setTimeout(eraseEffect, 5000);
-                return;
-            }
-            setTimeout(typeEffect, 200);
-        }
-
-        function eraseEffect() {
-            const temp = text.substring(0, index);
-            title.textContent = temp;
-            index--;
-            if (index === 0) {
-                setTimeout(typeEffect, 200);
-                return;
-            }
-            setTimeout(eraseEffect, 200);
-        }
-
-        window.onload = function() {
-            typeEffect();
         }
     </script>
 </body>
