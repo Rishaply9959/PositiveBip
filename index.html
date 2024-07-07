@@ -300,36 +300,6 @@
                 openLoginDialog();
             }
         }
-
-        // Text animation loop
-        const title = document.querySelector('.title');
-        const text = 'Welcome to PositiveBip';
-        let index = 0;
-
-        function typeEffect() {
-            title.textContent += text[index];
-            index++;
-            if (index === text.length) {
-                setTimeout(eraseEffect, 5000);
-                return;
-            }
-            setTimeout(typeEffect, 200);
-        }
-
-        function eraseEffect() {
-            const temp = text.substring(0, index);
-            title.textContent = temp;
-            index--;
-            if (index === 0) {
-                setTimeout(typeEffect, 200);
-                return;
-            }
-            setTimeout(eraseEffect, 200);
-        }
-
-        window.onload = function() {
-            typeEffect();
-        }
-    </script>
+   </script>
 </body>
 </html>
