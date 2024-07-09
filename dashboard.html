@@ -202,7 +202,28 @@
     </div>
 
     <script>
-        const serverUrl = 'http://100.93.86.68:8080';  // Replace with your actual server URL
+        // Initialize IndexedDB
+        let db;
+        const request = indexedDB.open('videoDB', 1);
+
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('videos')) {
+                const objectStore = db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('title', 'title', { unique: false });
+                objectStore.createIndex('description', 'description', { unique: false });
+                objectStore.createIndex('username', 'username', { unique: false });
+            }
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            loadHome();
+        };
+
+        request.onerror = function(event) {
+            console.error('Database error:', event.target.error);
+        };
 
         function uploadVideo() {
             const videoFile = document.getElementById('videoUpload').files[0];
@@ -211,75 +232,73 @@
             const videoUsername = document.getElementById('videoUsername').value;
 
             if (videoFile && videoTitle && videoDescription && videoUsername) {
-                const formData = new FormData();
-                formData.append('videoUpload', videoFile);
-                formData.append('title', videoTitle);
-                formData.append('description', videoDescription);
-                formData.append('username', videoUsername);
-
-                fetch(`${serverUrl}/upload`, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        loadVideos();
-                        closeUploadModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error uploading video:', error);
-                    alert('Error uploading video.');
-                });
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataURL = event.target.result;
+                    saveVideoData(videoFile.name, videoTitle, videoDescription, videoUsername, dataURL);
+                };
+                reader.readAsDataURL(videoFile);
             } else {
                 alert('Please fill out all fields and select a video file.');
             }
         }
 
-        function loadVideos() {
-            fetch(`${serverUrl}/videos`)
-                .then(response => response.json())
-                .then(videos => {
-                    const videoContainer = document.getElementById('videoContainer');
-                    videoContainer.innerHTML = '';
+        function saveVideoData(name, title, description, username, dataURL) {
+            const transaction = db.transaction(['videos'], 'readwrite');
+            const objectStore = transaction.objectStore('videos');
+            const request = objectStore.add({ title: title, description: description, username: username, dataURL: dataURL });
 
-                    videos.forEach(video => {
-                        const videoElement = document.createElement('div');
-                        videoElement.classList.add('video');
-                        
-                        const videoTitle = document.createElement('div');
-                        videoTitle.classList.add('video-title');
-                        videoTitle.textContent = video.title;
-                        
-                        const videoTag = document.createElement('video');
-                        videoTag.controls = true;
-                        videoTag.src = `${serverUrl}/${video.videoPath}`;
-                        videoTag.type = 'video/mp4';
+            request.onsuccess = function() {
+                loadHome();
+                closeUploadModal();
+            };
 
-                        const videoDescription = document.createElement('p');
-                        videoDescription.textContent = video.description;
-
-                        const videoUsername = document.createElement('p');
-                        videoUsername.textContent = `Uploaded by: ${video.username}`;
-
-                        videoElement.appendChild(videoTag);
-                        videoElement.appendChild(videoTitle);
-                        videoElement.appendChild(videoDescription);
-                        videoElement.appendChild(videoUsername);
-                        
-                        videoContainer.appendChild(videoElement);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching videos:', error);
-                });
+            request.onerror = function() {
+                alert('Error uploading video.');
+            };
         }
 
         function loadHome() {
             // Code for loading home content
+        }
+
+        function loadVideos() {
+            const transaction = db.transaction(['videos'], 'readonly');
+            const objectStore = transaction.objectStore('videos');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function(event) {
+                const videos = event.target.result;
+                const videoContainer = document.getElementById('videoContainer');
+                videoContainer.innerHTML = '';
+
+                videos.forEach(video => {
+                    const videoElement = document.createElement('div');
+                    videoElement.classList.add('video');
+                    
+                    const videoTitle = document.createElement('div');
+                    videoTitle.classList.add('video-title');
+                    videoTitle.textContent = video.title;
+                    
+                    const videoTag = document.createElement('video');
+                    videoTag.controls = true;
+                    videoTag.src = video.dataURL;
+                    videoTag.type = 'video/mp4';
+
+                    const videoDescription = document.createElement('p');
+                    videoDescription.textContent = video.description;
+
+                    const videoUsername = document.createElement('p');
+                    videoUsername.textContent = `Uploaded by: ${video.username}`;
+
+                    videoElement.appendChild(videoTag);
+                    videoElement.appendChild(videoTitle);
+                    videoElement.appendChild(videoDescription);
+                    videoElement.appendChild(videoUsername);
+                    
+                    videoContainer.appendChild(videoElement);
+                });
+            };
         }
 
         function loadHistory() {
@@ -293,9 +312,8 @@
             document.getElementById('videoUsername').value = '';
             document.getElementById('videoUpload').value = '';
         }
-
-        document.addEventListener('DOMContentLoaded', loadVideos);
     </script>
 </body>
-      </html>
-          
+    </html>
+
+    
