@@ -105,9 +105,20 @@
             height: 24px;
             margin-right: 5px;
         }
+        .profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .profile img {
+            border-radius: 50%;
+            height: 40px;
+            width: 40px;
+            margin-left: 10px;
+        }
 
         /* Upload Modal */
-        #uploadModal {
+        #uploadModal, #profileModal, #historyModal {
             display: none;
             position: fixed;
             top: 0;
@@ -118,29 +129,32 @@
             justify-content: center;
             align-items: center;
         }
-        #uploadModal .modal-content {
+        #uploadModal .modal-content, #profileModal .modal-content, #historyModal .modal-content {
             background: white;
             padding: 20px;
             border-radius: 5px;
             width: 50%;
+            max-height: 80%;
+            overflow-y: auto;
         }
-        #uploadModal .modal-content h2 {
+        #uploadModal .modal-content h2, #profileModal .modal-content h2, #historyModal .modal-content h2 {
             margin-top: 0;
         }
-        #uploadModal .modal-content label {
+        #uploadModal .modal-content label, #profileModal .modal-content label, #historyModal .modal-content label {
             display: block;
             margin-top: 10px;
             font-weight: bold;
         }
-        #uploadModal .modal-content input, 
-        #uploadModal .modal-content textarea {
+        #uploadModal .modal-content input, #profileModal .modal-content input, 
+        #uploadModal .modal-content textarea, #profileModal .modal-content textarea, 
+        #historyModal .modal-content textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        #uploadModal .modal-content button {
+        #uploadModal .modal-content button, #profileModal .modal-content button, #historyModal .modal-content button {
             margin-top: 10px;
             padding: 10px;
             background-color: #FFD700;
@@ -186,6 +200,28 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div id="profileModal">
+        <div class="modal-content">
+            <h2>Profile</h2>
+            <label for="profileName">Username:</label>
+            <input type="text" id="profileName" placeholder="Your Username">
+            <label for="profilePicture">Profile Picture:</label>
+            <input type="file" id="profilePicture" accept="image/*">
+            <button onclick="saveProfile()">Save Profile</button>
+            <button onclick="closeProfileModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal">
+        <div class="modal-content">
+            <h2>Watch History</h2>
+            <textarea id="historyContent" rows="10" readonly></textarea>
+            <button onclick="closeHistoryModal()">Close</button>
+        </div>
+    </div>
+
     <div class="footer">
         <a href="#" onclick="loadHome()">
             <img src="home-icon.png" alt="Home">
@@ -195,10 +231,14 @@
             <img src="shorts-icon.png" alt="Videos">
             Videos
         </a>
-        <a href="#" onclick="loadHistory()">
+        <a href="#" onclick="openHistoryModal()">
             <img src="history-icon.png" alt="History">
             History
         </a>
+        <div class="profile" onclick="openProfileModal()">
+            <span id="profileUsername">Profile</span>
+            <img id="profileImage" src="default-profile.png" alt="Profile Picture">
+        </div>
     </div>
 
     <script>
@@ -219,6 +259,7 @@
         request.onsuccess = function(event) {
             db = event.target.result;
             loadHome();
+            loadProfile();
         };
 
         request.onerror = function(event) {
@@ -302,7 +343,33 @@
         }
 
         function loadHistory() {
-            alert("History feature is not implemented yet.");
+            const transaction = db.transaction(['videos'], 'readonly');
+            const objectStore = transaction.objectStore('videos');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function(event) {
+                const videos = event.target.result;
+                let historyContent = '';
+
+                videos.forEach(video => {
+                    historyContent += `Title: ${video.title}\n`;
+                    historyContent += `Description: ${video.description}\n`;
+                    historyContent += `Uploaded by: ${video.username}\n\n`;
+                });
+
+                document.getElementById('historyContent').value = historyContent;
+            };
+
+            openHistoryModal();
+        }
+
+        function openHistoryModal() {
+            document.getElementById('historyModal').style.display = 'flex';
+            loadHistory();
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
         }
 
         function closeUploadModal() {
@@ -312,8 +379,43 @@
             document.getElementById('videoUsername').value = '';
             document.getElementById('videoUpload').value = '';
         }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+            document.getElementById('profileName').value = '';
+            document.getElementById('profilePicture').value = '';
+        }
+
+        function saveProfile() {
+            const profileName = document.getElementById('profileName').value;
+            const profilePicture = document.getElementById('profilePicture').files[0];
+
+            if (profileName && profilePicture) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const profileImageURL = event.target.result;
+                    localStorage.setItem('profileName', profileName);
+                    localStorage.setItem('profileImage', profileImageURL);
+                    loadProfile();
+                    closeProfileModal();
+                };
+                reader.readAsDataURL(profilePicture);
+            } else {
+                alert('Please fill out all fields and select a profile picture.');
+            }
+        }
+
+        function loadProfile() {
+            const profileName = localStorage.getItem('profileName') || 'Profile';
+            const profileImage = localStorage.getItem('profileImage') || 'default-profile.png';
+
+            document.getElementById('profileUsername').textContent = profileName;
+            document.getElementById('profileImage').src = profileImage;
+        }
     </script>
 </body>
-    </html>
-
-    
+</html>
