@@ -118,7 +118,7 @@
         }
 
         /* Upload Modal */
-        #uploadModal, #profileModal, #historyModal {
+        #uploadModal, #profileModal {
             display: none;
             position: fixed;
             top: 0;
@@ -129,32 +129,29 @@
             justify-content: center;
             align-items: center;
         }
-        #uploadModal .modal-content, #profileModal .modal-content, #historyModal .modal-content {
+        #uploadModal .modal-content, #profileModal .modal-content {
             background: white;
             padding: 20px;
             border-radius: 5px;
             width: 50%;
-            max-height: 80%;
-            overflow-y: auto;
         }
-        #uploadModal .modal-content h2, #profileModal .modal-content h2, #historyModal .modal-content h2 {
+        #uploadModal .modal-content h2, #profileModal .modal-content h2 {
             margin-top: 0;
         }
-        #uploadModal .modal-content label, #profileModal .modal-content label, #historyModal .modal-content label {
+        #uploadModal .modal-content label, #profileModal .modal-content label {
             display: block;
             margin-top: 10px;
             font-weight: bold;
         }
         #uploadModal .modal-content input, #profileModal .modal-content input, 
-        #uploadModal .modal-content textarea, #profileModal .modal-content textarea, 
-        #historyModal .modal-content textarea {
+        #uploadModal .modal-content textarea, #profileModal .modal-content textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        #uploadModal .modal-content button, #profileModal .modal-content button, #historyModal .modal-content button {
+        #uploadModal .modal-content button, #profileModal .modal-content button {
             margin-top: 10px;
             padding: 10px;
             background-color: #FFD700;
@@ -213,15 +210,6 @@
         </div>
     </div>
 
-    <!-- History Modal -->
-    <div id="historyModal">
-        <div class="modal-content">
-            <h2>Watch History</h2>
-            <textarea id="historyContent" rows="10" readonly></textarea>
-            <button onclick="closeHistoryModal()">Close</button>
-        </div>
-    </div>
-
     <div class="footer">
         <a href="#" onclick="loadHome()">
             <img src="home-icon.png" alt="Home">
@@ -231,7 +219,7 @@
             <img src="shorts-icon.png" alt="Videos">
             Videos
         </a>
-        <a href="#" onclick="openHistoryModal()">
+        <a href="#" onclick="loadHistory()">
             <img src="history-icon.png" alt="History">
             History
         </a>
@@ -343,33 +331,7 @@
         }
 
         function loadHistory() {
-            const transaction = db.transaction(['videos'], 'readonly');
-            const objectStore = transaction.objectStore('videos');
-            const request = objectStore.getAll();
-
-            request.onsuccess = function(event) {
-                const videos = event.target.result;
-                let historyContent = '';
-
-                videos.forEach(video => {
-                    historyContent += `Title: ${video.title}\n`;
-                    historyContent += `Description: ${video.description}\n`;
-                    historyContent += `Uploaded by: ${video.username}\n\n`;
-                });
-
-                document.getElementById('historyContent').value = historyContent;
-            };
-
-            openHistoryModal();
-        }
-
-        function openHistoryModal() {
-            document.getElementById('historyModal').style.display = 'flex';
-            loadHistory();
-        }
-
-        function closeHistoryModal() {
-            document.getElementById('historyModal').style.display = 'none';
+            alert("History feature is not implemented yet.");
         }
 
         function closeUploadModal() {
@@ -418,4 +380,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
+    
